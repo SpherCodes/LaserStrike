@@ -1,29 +1,58 @@
 "use client"
 import { useState, useEffect } from "react";
 import HealthBar from "@/components/healthbar";
-import {Player} from "@/lib/Types";
+import { Player } from "@/lib/Types";
+import { useRouter } from "next/navigation";
 
 export default function SpectatorView() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [snapshots, setSnapshots] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  const [scores, setScores] = useState<number[]>([]);//for scores
+  const [scores, setScores] = useState<number[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-     const newPlayers = [
-        { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: "A1" },
-        { name: "Calvin", health: 1, kills: 1, deaths: 1, id: "A2" },
-        { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
-        { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
+    // --- Skeleton for fetching players and snapshots ---
+    // (Uncomment and implement your API calls here)
+    /*
+    async function fetchPlayersAndSnapshots() {
+      const playersRes = await fetch('/api/players');
+      const playersData = await playersRes.json();
+      setPlayers(playersData);
+
+      const snapshotsRes = await fetch('/api/snapshots');
+      const snapshotsData = await snapshotsRes.json();
+      setSnapshots(snapshotsData);
+    }
+    fetchPlayersAndSnapshots();
+    */
+
+    // --- Test data (keep for now) ---
+    const newPlayers = [
+      { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: "A1" },
+      { name: "Calvin", health: 1, kills: 1, deaths: 1, id: "A2" },
+      { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
+      { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
     ];
+    //Calculating scores based on kills, deaths, and health
+    // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.
+    // The score is calculated as follows:
+    // score = (kills * killScore) + (deaths * deathBonus) + (health * healthBonus)
     const playersWithScores = newPlayers.map((player) => {
-        const kills = player.kills ?? 0;
-        const deaths = player.deaths ?? 0;
-        const score = (kills * 100) - (deaths * 50);
-        return { player, score: score < 0 ? 0 : score };
+      const kills = player.kills ?? 0;
+      const deaths = player.deaths ?? 0;
+      const health = player.health ?? 0;
+
+      const killScore = 100;
+      const deathBonus = 10;
+      const healthBonus = 0.5;
+
+      const score = Math.round((kills * killScore) + (deaths * deathBonus) + (health * healthBonus));
+
+      return { player, score };
     });
-    
+
     playersWithScores.sort((a, b) => b.score - a.score);
     const sortedPlayers = playersWithScores.map((p) => p.player);
     const sortedScores = playersWithScores.map((p) => p.score);
@@ -38,11 +67,14 @@ export default function SpectatorView() {
       <div className="bg-gray-900 border-b border-gray-700 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">🎯 LaserStrike</h1>
+            <h1 className="text-2xl font-bold text-white">LaserStrike</h1>
             <p className="text-gray-400 text-sm">Live Game Monitor</p>
           </div>
           <div className="flex space-x-3">
-            <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm">
+            <button
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm"
+              onClick={() => router.push('/start')}
+            >
               Start Game
             </button>
             <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm">
@@ -71,76 +103,101 @@ export default function SpectatorView() {
         >
           <h2 className="text-lg font-semibold mb-4 text-white">🏆 Rankings</h2>
           <div className="space-y-3">
-            {players.map((player, index) => (
-              <div
-                key={player.id}
-                className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
-                      {index + 1}
+            {players.map((player, index) => {
+              const isTop3 = index < 3;
+              // Choose a color for each top 3 rank
+              const rankColors = [
+                "from-yellow-400 to-yellow-600 text-yellow-900 border-yellow-400", // 1st
+                "from-gray-300 to-gray-500 text-gray-900 border-gray-300",         // 2nd
+                "from-amber-500 to-orange-700 text-orange-900 border-amber-400"    // 3rd
+              ];
+              return (
+                <div
+                  key={player.id}
+                  className={
+                    isTop3
+                      ? "bg-gray-800 rounded-lg p-5 border border-gray-700 hover:border-gray-600 transition"
+                      : "bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition scale-95"
+                  }
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={
+                          isTop3
+                            ? `w-12 h-12 bg-gradient-to-br ${rankColors[index]} border-2 rounded-full flex items-center justify-center text-2xl font-extrabold shadow-lg`
+                            : "w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold"
+                        }
+                      >
+                        {index + 1}
+                      </div>
+                      <div
+                        className={
+                          isTop3
+                            ? "w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl font-bold"
+                            : "w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold"
+                        }
+                      >
+                        {player.id}
+                      </div>
+                      <div>
+                        <div className={isTop3 ? "font-bold text-lg text-white" : "font-medium text-base text-white"}>
+                          {player.name}
+                        </div>
+                        <div className={isTop3 ? "text-sm text-gray-300" : "text-xs text-gray-400"}>
+                          K:{player.kills} D:{player.deaths}
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold">
-                      {player.id}
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{player.name}</div>
-                      <div className="text-xs text-gray-400">K:{player.kills} D:{player.deaths}</div>
+                    <div className="text-right">
+                      <div className={isTop3 ? "text-lg font-extrabold text-cyan-300" : "text-sm font-bold text-cyan-400"}>
+                        {scores[index] ?? 0}
+                      </div>
+                      <div className={isTop3 ? "text-xs text-gray-300" : "text-xs text-gray-400"}>points</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-cyan-400">{scores[index] ?? 0}</div>
-                    <div className="text-xs text-gray-400">points</div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">Health</span>
+                      <span className={isTop3 ? "text-white font-bold" : "text-white"}>{player.health}%</span>
+                    </div>
+                    <HealthBar current={player.health} />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Health</span>
-                    <span className="text-white">{player.health}%</span>
-                  </div>
-                  <HealthBar current={player.health} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Snapshots Content */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">📸 Battle Snapshots</h2>
+            <h2 className="text-lg font-semibold text-white">Battle Snapshots</h2>
             <div className="text-sm text-gray-400">{snapshots.length} photos</div>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="snapshots-grid">
             {snapshots.slice(0, 12).map((src, index) => (
               <div
                 key={index}
-                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition cursor-pointer"
+                className="snapshot-card"
                 onClick={() => setSelectedImage(src)}
               >
                 <img
                   src={src}
                   alt={`Battle snapshot ${index + 1}`}
-                  className="w-full h-48 object-cover hover:opacity-90 transition"
+                  className="snapshot-img"
                 />
-                <div className="p-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-300">Shot #{index + 1}</span>
-                    <span className="text-xs text-gray-500">
-                      {Math.floor(Math.random() * 60)}s ago
-                    </span>
-                  </div>
+                <div className="snapshot-meta">
+                  <span>Shot #{index + 1}</span>
+                  <span>{Math.floor(Math.random() * 60)}s ago</span>
                 </div>
               </div>
             ))}
           </div>
-
           {snapshots.length === 0 && (
-            <div className="text-center py-16">
+            <div className="text-center py-16 text-gray-400">
               <div className="text-4xl mb-4 opacity-50">📷</div>
-              <p className="text-gray-400">No battle snapshots yet</p>
+              <p>No battle snapshots yet</p>
             </div>
           )}
         </div>
