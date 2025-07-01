@@ -64,7 +64,7 @@ export default function SpectatorView() {
   }, []);
 
   return (
-    <div className="h-screen bg-gray-950 text-white relative flex flex-col">
+    <div className="min-h-screen bg-gray-950 text-white relative flex flex-col">
       {/* Simple Header */}
       <div className="bg-gray-900 border-b border-gray-700 p-6">
         <div className="flex items-center justify-between">
