@@ -34,6 +34,7 @@ export default function SpectatorView() {
       { name: "Calvin", health: 1, kills: 1, deaths: 1, id: "A2" },
       { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
       { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
+      { name: "Other", health: 1, kills: 1, deaths: 9, id: "A4" },
     ];
     //Calculating scores based on kills, deaths, and health
     // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.
@@ -58,7 +59,7 @@ export default function SpectatorView() {
     const sortedScores = playersWithScores.map((p) => p.score);
     setPlayers(sortedPlayers);
     setScores(sortedScores);
-    setSnapshots(Array.from({ length: 200 }, () => "https://via.placeholder.com/150"));
+    setSnapshots(Array.from({ length: 200 }, () => "/images/bg-start2.jpg"));
   }, []);
 
   return (
@@ -97,11 +98,20 @@ export default function SpectatorView() {
         {/* Rankings Sidebar */}
         <div
           className={`bg-gray-900 border-r border-gray-700 p-4 overflow-auto transition-transform duration-300 ease-in-out z-40
-          fixed top-0 left-0 h-full w-72 
-          transform ${showSidebar ? "translate-x-0" : "-translate-x-full"} 
-          md:static md:translate-x-0 md:w-1/3 md:block`}
+          fixed top-0 left-0 h-full w-56
+          transform ${showSidebar ? "translate-x-0" : "-translate-x-full"}
+          md:static md:translate-x-0 md:w-1/4 md:block`}
         >
-          <h2 className="text-lg font-semibold mb-4 text-white">🏆 Rankings</h2>
+          <div className="flex items-center mb-4 space-x-2">
+            {/* Stylish icon for rankings */}
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-red-500 to-red-900 shadow-lg">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="10" stroke="#fff" strokeWidth="2" fill="none"/>
+                <path d="M11 5v7l4 2" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+            <h2 className="text-xl font-bold text-yellow-200 tracking-wide drop-shadow">Rankings</h2>
+          </div>
           <div className="space-y-3">
             {players.map((player, index) => {
               const isTop3 = index < 3;
@@ -144,9 +154,6 @@ export default function SpectatorView() {
                         <div className={isTop3 ? "font-bold text-lg text-white" : "font-medium text-base text-white"}>
                           {player.name}
                         </div>
-                        <div className={isTop3 ? "text-sm text-gray-300" : "text-xs text-gray-400"}>
-                          K:{player.kills} D:{player.deaths}
-                        </div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -162,6 +169,10 @@ export default function SpectatorView() {
                       <span className={isTop3 ? "text-white font-bold" : "text-white"}>{player.health}%</span>
                     </div>
                     <HealthBar current={player.health} />
+                    <div className="flex justify-between text-xs mt-1">
+                      <span className="text-gray-400">Kills: <span className="text-green-400 font-semibold">{player.kills}</span></span>
+                      <span className="text-gray-400">Deaths: <span className="text-red-400 font-semibold">{player.deaths}</span></span>
+                    </div>
                   </div>
                 </div>
               );
@@ -172,7 +183,17 @@ export default function SpectatorView() {
         {/* Snapshots Content */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Battle Snapshots</h2>
+            <div className="flex items-center space-x-2">
+              {/* Stylish icon for snapshots */}
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-gray-800 to-gray-900 shadow-lg">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <rect x="3" y="6" width="16" height="12" rx="3" stroke="#fff" strokeWidth="2"/>
+                  <circle cx="11" cy="12" r="3" stroke="#fff" strokeWidth="2"/>
+                  <rect x="8" y="3" width="6" height="3" rx="1.5" fill="#fff" fillOpacity="0.2"/>
+                </svg>
+              </span>
+              <h2 className="text-xl font-bold text-red-200 tracking-wide drop-shadow">Battle Snapshots</h2>
+            </div>
             <div className="text-sm text-gray-400">{snapshots.length} photos</div>
           </div>
           <div className="snapshots-grid">

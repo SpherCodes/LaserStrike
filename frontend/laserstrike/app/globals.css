@@ -93,7 +93,8 @@ body {
 
 /* Start Game Card Enhancements */
 .start-game-card {
-  background: linear-gradient(135deg, #18181b 60%, #3b0a0a 100%);
+  background: linear-gradient(135deg, #18181b 60%, #3b0a0a 100%), /* existing dark gradient */
+              linear-gradient(120deg, rgba(0,0,0,0.85) 60%, rgba(220,38,38,0.35) 100%);
   border: 1.5px solid #ff3c3c33;
   border-radius: 1.5rem;
   box-shadow: 0 4px 32px 0 #000a, 0 2px 0 #ff3c3c22 inset;
@@ -102,6 +103,7 @@ body {
   width: 100%;
   margin: auto;
   transition: box-shadow 0.2s, border 0.2s;
+  background-blend-mode: overlay, normal;
 }
 
 .start-game-card:hover {
@@ -157,5 +159,16 @@ body {
 .start-game-btn:hover {
   background: linear-gradient(90deg, #b91c1c 60%, #ff3c3c 100%);
   box-shadow: 0 4px 16px 0 #ff3c3c55;
+}
+
+.start-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -10;
+  /*background: url('/images/bg-start.jpg') center center / cover no-repeat !important;*/
+  filter: brightness(0.3) blur(2px);
+  pointer-events: none;
 }
 
