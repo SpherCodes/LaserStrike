@@ -2,7 +2,7 @@
 import { sendDataToServer, getSocket } from '@/lib/socket';
 import React, { useEffect, useRef, useState } from 'react';
 
-const CameraViewer: React.FC<{ playerId: string }> = ({ playerId }) => {
+const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);

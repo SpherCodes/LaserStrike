@@ -36,7 +36,8 @@ export default function GameStartPage() {
     try {
       await createGame(gameId);
       router.push('/spectator'); // Redirects back to spectator view
-    } catch (err) {
+    } catch (error) {
+      console.error('Game creation failed:', error);
       setError('Could not create game. Please try again.');
     }
   };

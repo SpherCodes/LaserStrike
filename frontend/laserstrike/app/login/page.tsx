@@ -8,7 +8,7 @@ import TargetIcon from '@/components/TargetIcon';
 
 interface PlayerRegisterProps {
   name: string;
-  tagId: number;
+  tagId: string; // Keep as string for form input, convert when needed
 }
 
 export default function LoginPage() {
@@ -40,7 +40,10 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       //  Register via REST API
-      const registered = await RegisterPlayer(player);
+      const registered = await RegisterPlayer({
+        name: player.name,
+        tagId: parseInt(player.tagId) // Convert string to number
+      });
 
       if (registered && registered.id) {
         //Persist to session

@@ -1,17 +1,18 @@
 export type Player = {
-  id: string;
+  id: number;
   name: string;
   kills?: number;
   deaths?: number;
-    health:number;
+  health: number;
 };
 
-declare interface PlayerRegisterProps{
-    name: string;
-    tagId: number;
+// Keep these exported for future use
+export interface PlayerRegisterProps {
+  name: string;
+  tagId: number;
 }
 
-declare type GameState = {
+export type GameState = {
   players: Player[];
   currentPlayerId: string;
   gameStarted: boolean;
@@ -19,6 +20,8 @@ declare type GameState = {
   leaderboard: Player[];
 };
 
-declare type Game = {
+export type Game = {
   id: string;
+  players: Player[];
+  status: 'waiting' | 'active' | 'ended';
 };

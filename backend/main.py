@@ -1,6 +1,7 @@
+import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect,HTTPException,WebSocketException
 from fastapi.middleware.cors import CORSMiddleware
-from services import *
+from services import *  # Using original services with computer vision
 from models import User
 
 # TODO: update both players after successful shot, add images of successful shot
