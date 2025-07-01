@@ -35,6 +35,7 @@ export default function SpectatorView() {
       { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
       { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
       { name: "Other", health: 1, kills: 1, deaths: 9, id: "A5" },
+      { name: "Other2", health: 1, kills: 9, deaths: 0, id: "A6" },
     ];
     //Calculating scores based on kills, deaths, and health
     // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.
@@ -47,7 +48,7 @@ export default function SpectatorView() {
 
       const killScore = 100;
       const deathBonus = 10;
-      const healthBonus = 0.5;
+      const healthBonus = 0.001;
 
       const score = Math.round((kills * killScore) + (deaths * deathBonus) + (health * healthBonus));
 
@@ -63,7 +64,7 @@ export default function SpectatorView() {
   }, []);
 
   return (
-    <div className="h-screen bg-gray-950 text-white relative flex flex-col">
+    <div className="min-h-screen bg-gray-950 text-white relative flex flex-col">
       {/* Simple Header */}
       <div className="bg-gray-900 border-b border-gray-700 p-6">
         <div className="flex items-center justify-between">
@@ -98,7 +99,7 @@ export default function SpectatorView() {
         {/* Rankings Sidebar */}
         <div
           className={`bg-gray-900 border-r border-gray-700 p-4 overflow-auto transition-transform duration-300 ease-in-out z-40
-          fixed top-0 left-0 h-full w-56
+          fixed top-0 left-0 min-h-full w-56
           transform ${showSidebar ? "translate-x-0" : "-translate-x-full"}
           md:static md:translate-x-0 md:w-1/4 md:block`}
         >
