@@ -23,5 +23,5 @@ export type GameState = {
 export type Game = {
   id: string;
   players: Player[];
-  status: 'waiting' | 'active' | 'ended';
+  status: "waiting" | "active" | "ended";
 };
