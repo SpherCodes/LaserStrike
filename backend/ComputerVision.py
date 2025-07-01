@@ -1,76 +1,56 @@
 import cv2
-import easyocr
+from cv2 import aruco
 import re
 import numpy as np
 import base64
 
 class Model:
-    def __init__(self, targets: set):
-        self.target_words = targets
-        self.target_patterns = [re.compile(r'\b' + re.escape(word) + r'\b', re.IGNORECASE) for word in targets]
-        self.ocr_reader = easyocr.Reader(['en'], gpu=True)
-
-    # Proccesses image and returns the id of the player tagged
-    def process_image(self,base64_image: str) -> str | None:
-        image = self._base64_to_image(base64_image)
-        if image is None:
-            return None
-
-        matched_words = self._detect_id(image) # Check for ID's
+     # We will have to construct this with the real world size of the markers if we want distance to work
+    def __init__(self, marker_size_cm=18.7):
+        self.marker_size_cm = marker_size_cm
+        self.dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
     
-        if matched_words:
-            print(f"✅ Found words: {matched_words[0]['word']}")
-            return str(matched_words[0]['word']) #The largest ID found
-        else:
-            print("❌ No target words found.")
+    # Returns a dictionary with ID and distance so that if we want to do anything with it we can
+    def process_image(self, base64_img: str) -> str | None:
+        image = self._base64_to_image(base64_img)
+        detected_markers = self._detect_markers(image)
+        closest = self._get_closest(detected_markers, image)
+        return closest[0], closest[1]
+
+    def _detect_markers(self, image):
+        detected_markers = {}
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.dictionary)
+        if ids is not None:
+            for i in range(len(ids)):
+                M = cv2.moments(corners[i][0])
+                if M["m00"] != 0:
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                    marker_info = {
+                        'ID': ids[i],
+                        'Centroid': (cX, cY),
+                        'Corners': corners[i][0]
+                    }
+                    detected_markers[ids[i][0]] = marker_info
+        return detected_markers
+
+    # Only works if marker_size_cm is accurate
+    def _calculate_distance(self, marker_size_pixels, cap_width):
+        return self.marker_size_cm * cap_width / marker_size_pixels
+    
+    def _get_closest(self, detected_markers, image):
+        if not detected_markers:
             return None
+        markers = []
+        for marker_id, marker_info in detected_markers.items():
+            marker_size_pixels = np.mean([np.linalg.norm(marker_info['Corners'][j] - marker_info['Corners'][(j + 1) % 4]) for j in range(4)])
+            distance_to_marker_cm = self._calculate_distance(marker_size_pixels, image.shape[1])
+            markers.append((int(marker_id), float(distance_to_marker_cm)))
+        sorted_markers = sorted(markers, key=lambda x: x[1])
+        return sorted_markers[0]
 
-    # Detects player Id's in an image
-    def _detect_id(self,image):
-        # Convert to grayscale and resize to 720p for faster OCR
-        scaled = self._resize(image)
-        gray = cv2.cvtColor(scaled, cv2.COLOR_BGR2GRAY)
 
-        # Optimised parameters
-        results = self.ocr_reader.readtext(gray,
-                                     batch_size=1,
-                                     decoder='beamsearch',
-                                     width_ths=0.5,  # Merge close boxes
-                                     text_threshold=0.5,  # Higher confidence threshold
-                                     link_threshold=0.4,
-                                     min_size=50) # Filters small text
-
-        matched_entries = []
-        for bbox, text, confidence in results:
-            clean_text = text.strip().upper()
-
-            # Filter out low confidence guesses
-            if confidence < 0.7:
-                continue
-
-            # Search for target words/ID's
-            for word, pattern in zip(self.target_words, self.target_patterns):
-                if pattern.search(clean_text):
-
-                    # Calculate bounding box area (width * height)
-                    x_coords = [point[0] for point in bbox]
-                    y_coords = [point[1] for point in bbox]
-                    width = max(x_coords) - min(x_coords)
-                    height = max(y_coords) - min(y_coords)
-                    area = width * height
-
-                    matched_entries.append({
-                        'word': word,
-                        'area': area,
-                        'confidence': confidence
-                    })
-                    break
-
-            # Sort by area (descending)
-            if matched_entries:
-                matched_entries.sort(key=lambda x: x['area'], reverse=True)
-
-        return matched_entries
 
     # Scales to 720p without changing aspect ratio to avoid warping
     @staticmethod
