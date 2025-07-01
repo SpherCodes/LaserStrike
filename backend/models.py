@@ -5,3 +5,4 @@ class User(BaseModel):
     username: str
     kills: int = 0
     deaths: int = 0
+    health: int = 100

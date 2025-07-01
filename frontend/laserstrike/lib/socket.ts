@@ -1,5 +1,27 @@
-import { io } from 'socket.io-client';
+let socket: WebSocket | null = null;
 
-const socket = io('https://your-socket-server.com')
+export const getSocket = (userId: string) => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    socket = new WebSocket(`ws://localhost:8000/ws/${userId}`);
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+    socket.onmessage = (event) => {
+      console.log("Received:", event.data);
+    };
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+  }
+  return socket;
+};
+export default getSocket;
 
-export default socket;
+export const sendImageToServer = (image: string): void => {
+    if (socket) {
+        socket.send(image);
+    }
+};
