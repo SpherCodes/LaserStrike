@@ -1,11 +1,15 @@
 'use client';
-import { sendImageToServer } from '@/lib/socket';
+import { sendDataToServer, getSocket } from '@/lib/socket';
 import React, { useEffect, useRef, useState } from 'react';
 
-const CameraCapture: React.FC = () => {
+const CameraViewer: React.FC<{ playerId: string }> = ({ playerId }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastCaptureStatus, setLastCaptureStatus] = useState<'success' | 'error' | null>(null);
+  const [captureMessage, setCaptureMessage] = useState<string>('');
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [captureCount, setCaptureCount] = useState(0);
 
   // Helper to stop any existing camera stream
   const stopCamera = () => {
@@ -42,14 +46,15 @@ const CameraCapture: React.FC = () => {
         try {
           await videoRef.current.play();
           setError(null);
-        } catch (playErr: any) {
+        } catch (playErr: unknown) {
           console.warn('Autoplay blocked or aborted:', playErr);
           setError('Tap the video to start the camera.');
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Camera error:', err);
-      if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+      const error = err as { name?: string };
+      if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
         setError('Camera is already in use. Please close other apps/tabs.');
       } else {
         setError('Unable to access the camera. Please check permissions.');
@@ -57,15 +62,43 @@ const CameraCapture: React.FC = () => {
     }
   };
 
-  // On mount, start camera; on unmount, stop it
+  // On mount, start camera and ensure WebSocket is connected
   useEffect(() => {
     startCamera();
-    return stopCamera;
-  }, []);
+    
+    // Ensure WebSocket is connected
+    const ensureSocketConnection = () => {
+      try {
+        const socket = getSocket(playerId);
+        console.log('WebSocket state:', socket?.readyState);
+        setIsSocketConnected(socket?.readyState === WebSocket.OPEN);
+      } catch (error) {
+        console.error('Failed to initialize WebSocket:', error);
+        setIsSocketConnected(false);
+      }
+    };
+
+    ensureSocketConnection();
+    
+    // Check connection periodically
+    const connectionCheckInterval = setInterval(() => {
+      ensureSocketConnection();
+    }, 5000);
+
+    return () => {
+      stopCamera();
+      clearInterval(connectionCheckInterval);
+    };
+  }, [playerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Capture frame and send
   const takePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
+    
+    if (!isSocketConnected) {
+      setError('WebSocket not connected');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -76,7 +109,46 @@ const CameraCapture: React.FC = () => {
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const image = canvas.toDataURL('image/jpeg', 0.9);
-      sendImageToServer(image);
+      
+      // Increment capture count to show activity
+      setCaptureCount(prev => prev + 1);
+      setLastCaptureStatus(null);
+      setCaptureMessage('');
+
+      // Send image via WebSocket with callback-based response handling
+      try {
+        sendDataToServer({
+          type: 'capture_image',
+          image: image.split(',')[1], // Send base64 data without prefix
+          player_id: playerId
+        }, (success, message) => {
+          // Handle response when it arrives
+          if (success) {
+            console.log('✅ Image sent successfully:', message);
+            setLastCaptureStatus('success');
+            setCaptureMessage(message || 'Strike captured successfully! 🎯');
+          } else {
+            console.error('❌ Image capture failed:', message);
+            setLastCaptureStatus('error');
+            setCaptureMessage(message || 'Failed to capture strike. Try again!');
+          }
+          
+          // Clear status after 3 seconds
+          setTimeout(() => {
+            setLastCaptureStatus(null);
+            setCaptureMessage('');
+          }, 3000);
+        });
+      } catch (error) {
+        console.error('Error sending image:', error);
+        setLastCaptureStatus('error');
+        setCaptureMessage('Connection error. Please try again.');
+        
+        setTimeout(() => {
+          setLastCaptureStatus(null);
+          setCaptureMessage('');
+        }, 3000);
+      }
     }
   };
 
@@ -147,15 +219,22 @@ const CameraCapture: React.FC = () => {
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30">
         <div className="relative">
           {/* Pulse ring */}
-          <div className="absolute inset-0 w-40 h-40 rounded-full bg-red-500 opacity-20 animate-ping"></div>
+          <div className= "absolute inset-0 w-40 h-40 rounded-full opacity-20 "></div>
           {/* Main button */}
           <button
             onClick={takePhoto}
-            className="relative w-40 h-40 bg-gradient-to-br from-white via-gray-100 to-gray-200 text-black rounded-full shadow-2xl border-4 border-red-600 text-2xl font-bold flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-150 hover:shadow-red-500/50"
+            disabled={!isSocketConnected}
+            className={`relative w-40 h-40 rounded-full shadow-2xl border-4 text-2xl font-bold flex items-center justify-center transition-all duration-150 ${
+              !isSocketConnected
+                ? 'bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 border-gray-600 text-gray-900 scale-95 cursor-not-allowed opacity-50'
+                : 'bg-gradient-to-br from-white via-gray-100 to-gray-200 text-black border-red-600 hover:scale-105 active:scale-95 hover:shadow-red-500/50'
+            }`}
           >
             <div className="flex flex-col items-center">
-              <span className="text-3xl mb-1">🎯</span>
-              <span className="text-lg font-extrabold">STRIKE</span>
+                <>
+                  <span className="text-3xl mb-1">🎯</span>
+                  <span className="text-lg font-extrabold">STRIKE</span>
+                </>
             </div>
           </button>
         </div>
@@ -164,12 +243,39 @@ const CameraCapture: React.FC = () => {
       {/* Status indicator */}
       <div className="absolute top-4 right-4 z-20">
         <div className="flex items-center space-x-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-white text-sm font-medium">LIVE</span>
+          <div className={`w-2 h-2 rounded-full ${
+            isSocketConnected 
+              ? 'bg-green-500 animate-pulse' 
+              : 'bg-red-500 animate-bounce'
+          }`}></div>
+          <span className="text-white text-sm font-medium">
+            {isSocketConnected ? 'CONNECTED' : 'DISCONNECTED'}
+          </span>
+          {captureCount > 0 && (
+            <span className="text-white text-xs bg-red-600 rounded-full px-2 py-1">
+              {captureCount}
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Capture Status Feedback */}
+      {lastCaptureStatus && (
+        <div className={`absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-6 py-3 rounded-lg backdrop-blur-sm border-2 transition-all duration-300 ${
+          lastCaptureStatus === 'success' 
+            ? 'bg-green-900/80 border-green-500 text-green-100' 
+            : 'bg-red-900/80 border-red-500 text-red-100'
+        }`}>
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">
+              {lastCaptureStatus === 'success' ? '✅' : '❌'}
+            </span>
+            <span className="font-medium">{captureMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default CameraCapture;
+export default CameraViewer;

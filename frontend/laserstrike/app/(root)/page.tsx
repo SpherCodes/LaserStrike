@@ -1,9 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CameraViewer from '@/components/CameraViewer';
 import HealthBar from '@/components/healthbar';
+import { Player } from '@/lib/Types';
+import { getSocket } from '@/lib/socket';
+import dynamic from 'next/dynamic';
+import CameraViewer from '@/components/CameraViewer';
+
+// const CameraViewer = dynamic(
+//   () => import('@/components/CameraViewer'),
+//   { ssr: false }
+// )
 
 export default function HomePage() {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -22,6 +31,13 @@ export default function HomePage() {
         const parsedPlayer = JSON.parse(storedPlayer);
         console.log('Parsed player object:', parsedPlayer);
         setPlayer(parsedPlayer);
+        
+        // Initialize WebSocket connection for the player
+        if (parsedPlayer.id) {
+          console.log('Initializing WebSocket for player:', parsedPlayer.id);
+          getSocket(parsedPlayer.id);
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error parsing stored player:', error);
@@ -128,7 +144,7 @@ export default function HomePage() {
       </div>
       {/* Camera View Container - Full remaining space */}
       <div className='flex-1 relative overflow-hidden'>
-        <CameraViewer />
+        <CameraViewer playerId={player.id} />
       </div>
     </div>
   );

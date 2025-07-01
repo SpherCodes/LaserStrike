@@ -1,9 +1,12 @@
+import { Player } from "../Types";
+
 export const RegisterPlayer = async (player: {
   name: string;
   tagId: string;
 }): Promise<Player | null> => {
   if (player) {
-    const res = await fetch("http://localhost:8000/users", {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const res = await fetch(`${apiUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

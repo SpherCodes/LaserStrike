@@ -28,7 +28,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or ["*"] for all origins (not recommended for production)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,7 +45,7 @@ async def health():
 @app.post("/users")
 async def create_user(new_user: User):
     users[new_user.id] = new_user
-    print(f"User created: {new_user.id} - {new_user.username}")
+    print(f"User created: {new_user.id} - {new_user.name}")
     return {"message": "User created successfully", "user": new_user}
 
 @app.get("/users")
@@ -72,6 +72,5 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     try:
        while True:
             data = await websocket.receive_text()
-            print(f"Received message from {user_id}: {data}")
     except WebSocketDisconnect:
         c_manager.disconnect(websocket)
