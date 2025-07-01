@@ -7,7 +7,7 @@ import { getSocket } from '@/lib/socket';
 
 interface PlayerRegisterProps {
   name: string;
-  tagId: string;
+  tagId: number;
 }
 
 export default function LoginPage() {

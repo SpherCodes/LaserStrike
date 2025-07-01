@@ -7,7 +7,7 @@ declare type Player = {
 
 declare interface PlayerRegisterProps{
     name: string;
-    tagId: string;
+    tagId: number;
 }
 
 declare type GameState = {

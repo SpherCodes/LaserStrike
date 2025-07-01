@@ -1,8 +1,8 @@
 let socket: WebSocket | null = null;
 
-export const getSocket = (userId: string) => {
+export const getSocket = (userId: number) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    socket = new WebSocket(`ws://localhost:8000/ws/${userId}`);
+    socket = new WebSocket(`ws://localhost:8000/ws/${userId.toString()}`);
     socket.onopen = () => {
       console.log("WebSocket connection established");
     };
@@ -23,6 +23,6 @@ export default getSocket;
 export const sendImageToServer = (image: string): void => {
   if (socket) {
          //TODO: add shooter_id param
-        socket.send(JSON.stringify({ image: image, shooter_id: "A2" }));
+        socket.send(JSON.stringify({ image: image, shooter_id: 2 }));
     }
 };

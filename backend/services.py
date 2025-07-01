@@ -2,8 +2,7 @@ import json
 from ComputerVision import Model
 from models import User
 
-PLAYER_IDS = {"A1", "A2", "A3", "A4"}
-model = Model(PLAYER_IDS)
+model = Model()
 users = {}
 # image object aka data, image and shooter_id
 def add_user(new_user: User) -> None:
@@ -12,20 +11,22 @@ def add_user(new_user: User) -> None:
 def list_users() -> dict:
     return users
 
-def find_user(user_id: str) -> User:
+def find_user(user_id: int) -> User:
     return users[user_id]
 
-def remove_user(user_id: str) -> User:
+def remove_user(user_id: int) -> User:
     return users.pop(user_id)
 
 def process_shot(data: str) -> bool:
     data_obj=json.loads(data)
-    target_id=  model.process_image(data_obj["image"])
-    if target_id is None:
+    processed_data = model.process_image(data_obj["image"])
+    if processed_data is None:
         return False
     else:
-        users[data_obj["shooter_id"]]["kills"] +=1
-        users[target_id]["deaths"] +=1
-        users[target_id]["health"] -=1
+        target_id, distance = processed_data
+        users[data_obj["shooter_id"]].kills +=1
+        users[target_id].deaths +=1
+        users[target_id].health -=1
+        print(users)
         #TODO: update the display and add the photo of the shot
         return True

@@ -1,6 +1,6 @@
 export const RegisterPlayer = async (player: {
   name: string;
-  tagId: string;
+  tagId: number;
 }): Promise<Player | null> => {
   if (player) {
     const res = await fetch("http://localhost:8000/users", {
@@ -24,4 +24,3 @@ export const RegisterPlayer = async (player: {
   console.error("No player provided");
   return null;
 };
-

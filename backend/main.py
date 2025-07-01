@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from services import *
 from models import User
 
+# TODO: update both players after successful shot, add images of successful shot
+# TODO: spectator view
+# TODO: single git ignore and readme
 class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: list[WebSocket] = []
@@ -28,7 +31,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,7 +65,7 @@ async def delete_user(user_id: str):
     return remove_user(user_id)
 
 @app.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str):
+async def websocket_endpoint(websocket: WebSocket, user_id: int):
     if user_id not in list_users():
         raise WebSocketException(code=404, reason=f"User with user_id:{user_id} not found")
     await c_manager.connect(websocket)
