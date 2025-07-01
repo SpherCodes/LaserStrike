@@ -1,8 +1,9 @@
-declare type Player = {
+export type Player = {
   id: string;
   name: string;
   kills?: number;
   deaths?: number;
+    health:number;
 };
 
 declare interface PlayerRegisterProps {

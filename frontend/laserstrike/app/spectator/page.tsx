@@ -1,29 +1,34 @@
 "use client"
 import { useState, useEffect } from "react";
 import HealthBar from "@/components/healthbar";
-
-type Player = {
-  id: number;
-  name: string;
-  rank: number;
-  health: number;
-  score: number;
-  letter: string;
-};
+import {Player} from "@/lib/Types";
 
 export default function SpectatorView() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [snapshots, setSnapshots] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
+  const [scores, setScores] = useState<number[]>([]);//for scores
 
   useEffect(() => {
-    setPlayers([
-      { id: 1, name: "Phiwo", rank: 1, health: 1, score: 2450, letter: "A" },
-      { id: 2, name: "Calvin", rank: 2, health: 3, score: 2200, letter: "B" },
-      { id: 3, name: "Siphesihle", rank: 3, health: 9, score: 2100, letter: "C" },
-      { id: 4, name: "Ethan", rank: 4, health: 6, score: 1950, letter: "D" },
-    ]);
+     const newPlayers = [
+        { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: "A1" },
+        { name: "Calvin", health: 1, kills: 1, deaths: 1, id: "A2" },
+        { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
+        { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
+    ];
+    const playersWithScores = newPlayers.map((player) => {
+        const kills = player.kills ?? 0;
+        const deaths = player.deaths ?? 0;
+        const score = (kills * 100) - (deaths * 50);
+        return { player, score: score < 0 ? 0 : score };
+    });
+    
+    playersWithScores.sort((a, b) => b.score - a.score);
+    const sortedPlayers = playersWithScores.map((p) => p.player);
+    const sortedScores = playersWithScores.map((p) => p.score);
+    setPlayers(sortedPlayers);
+    setScores(sortedScores);
     setSnapshots(Array.from({ length: 200 }, () => "https://via.placeholder.com/150"));
   }, []);
 
@@ -66,21 +71,21 @@ export default function SpectatorView() {
       >
         <h2 className="text-lg font-semibold mb-2">Rankings</h2>
         <ul className="space-y-4" style={{ marginLeft: "-10px" }}>
-          {players.map((player) => (
+          {players.map((player, index) => (
             <li
               key={player.id}
               className="grid grid-cols-[50px_50px_1fr] gap-3 items-center py-2"
               style={{ marginBottom: "8px" }}
             >
-              <div className="text-sm font-normal text-center">{player.rank}</div>
-              <div className="text-3xl font-light leading-none text-center">{player.letter}</div>
+              <div className="text-sm font-normal text-center">{index + 1}</div>
+              <div className="text-3xl font-light leading-none text-center">{player.id}</div>
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center justify-center bg-gray-100">
                     <HealthBar current={player.health} />
                   </div>
-                  <div className="text-xs text-cyan-400 ml-2" style={{ marginRight: "20px" }}>
-                    {player.score}pts
+                  <div className="text-xs text-cyan-400 mr-1">
+                    {scores[index] ?? 0}pts
                   </div>
                 </div>
                 <div className="text-sm font-medium text-white">{player.name}</div>
@@ -91,20 +96,22 @@ export default function SpectatorView() {
       </div>
 
       {/* Main Content - Snapshots */}
-      <div className="flex-1 p-3 overflow-auto ml-0 md:ml-0">
+      <div className="flex-1 p-3 overflow-auto">
         <h2 className="text-lg font-semibold mb-2">Snapshots</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        
+        <div className="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
           {snapshots.map((src, index) => (
             <img
               key={index}
               src={src}
               alt={`Snapshot ${index + 1}`}
-              className="w-full h-auto rounded cursor-pointer hover:opacity-80"
+              className="w-full h-64 object-cover rounded cursor-pointer hover:opacity-80"
               onClick={() => setSelectedImage(src)}
             />
           ))}
         </div>
       </div>
+
 
       {/* Modal for enlarged image */}
       {selectedImage && (
