@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface HealthBarProps {
-  current: number; // current health (e.g., 7)
-  max?: number;     // max health, default 10
+  current: number;
+  max?: number;
 }
 
-const HealthBar: React.FC<HealthBarProps> = ({ current, max = 10 }) => {
+const HealthBar: React.FC<HealthBarProps> = ({ current, max = 5 }) => {
   // Calculate percentage of current health
   const healthPercent = (current / max) * 100;
 
