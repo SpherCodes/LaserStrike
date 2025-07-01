@@ -26,10 +26,9 @@ class ConnectionManager:
 
 app = FastAPI()
 
-# Add this after creating your FastAPI app
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or ["*"] for all origins (not recommended for production)
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,8 +45,11 @@ async def health():
 @app.post("/users")
 async def create_user(new_user: User):
     users[new_user.id] = new_user
-    print(f"User created: {new_user.id} - {new_user.username}")
     return {"message": "User created successfully", "user": new_user}
+
+@app.get("/users")
+async def get_users():
+    return users
 
 @app.get("/users/{user_id}")
 async def get_user(user_id: str):
