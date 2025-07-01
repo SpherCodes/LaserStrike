@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect,HTTPException,WebSocketException
 from fastapi.middleware.cors import CORSMiddleware
-
+from services import *
 from models import User
 
 class ConnectionManager:
@@ -36,40 +36,39 @@ app.add_middleware(
 
 c_manager = ConnectionManager()
 
-users = {}
-
 @app.get("/")
 async def health():
     return {"status": "ok","message": "Service is running"}
 
 @app.post("/users")
 async def create_user(new_user: User):
-    users[new_user.id] = new_user
+    add_user(new_user)
     return {"message": "User created successfully", "user": new_user}
 
 @app.get("/users")
 async def get_users():
-    return users
+    return list_users()
 
 @app.get("/users/{user_id}")
 async def get_user(user_id: str):
-    if user_id not in users:
+    if user_id not in list_users():
         raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
-    return users[user_id]
+    return find_user(user_id)
 
 @app.delete("/users/{user_id}")
 async def delete_user(user_id: str):
-    if user_id not in users:
+    if user_id not in list_users():
         raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
-    return users.pop(user_id)
+    return remove_user(user_id)
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
-    if user_id not in users:
+    if user_id not in list_users():
         raise WebSocketException(code=404, reason=f"User with user_id:{user_id} not found")
     await c_manager.connect(websocket)
     try:
        while True:
             data = await websocket.receive_text()
+            await websocket.send_text(str(process_shot(data)))
     except WebSocketDisconnect:
         c_manager.disconnect(websocket)

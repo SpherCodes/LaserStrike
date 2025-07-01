@@ -8,7 +8,7 @@ export const RegisterPlayer = async (player: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: player.tagId,
-        username: player.name,
+        name: player.name,
       }),
     });
     const data = await res.json();

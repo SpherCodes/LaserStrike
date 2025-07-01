@@ -21,7 +21,8 @@ export const getSocket = (userId: string) => {
 export default getSocket;
 
 export const sendImageToServer = (image: string): void => {
-    if (socket) {
-        socket.send(image);
+  if (socket) {
+         //TODO: add shooter_id param
+        socket.send(JSON.stringify({ image: image, shooter_id: "A2" }));
     }
 };
