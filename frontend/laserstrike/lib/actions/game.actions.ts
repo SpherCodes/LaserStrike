@@ -4,8 +4,14 @@ export const RegisterPlayer = async (player: {
   name: string;
   tagId: number;
 }): Promise<Player | null> => {
-  if (player) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  if (!player || !player.name || !player.tagId || player.tagId <= 0) {
+    console.error("Invalid player data provided");
+    return null;
+  }
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  
+  try {
     const res = await fetch(`${apiUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -16,16 +22,17 @@ export const RegisterPlayer = async (player: {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Registration failed:", errorText);
+      const errorData = await res.json().catch(() => ({ detail: "Unknown error" }));
+      console.error("Registration failed:", errorData);
       return null;
     }
 
     const data = await res.json();
-    console.log("Registering player:", data);
+    console.log("Registration successful:", data);
 
     return data.user as Player;
+  } catch (error) {
+    console.error("Network error during registration:", error);
+    return null;
   }
-  console.error("No player provided");
-  return null;
 };

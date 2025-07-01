@@ -37,12 +37,19 @@ export default function LoginPage() {
       return;
     }
 
+    // Validate tagId is a valid number
+    const tagIdNumber = parseInt(player.tagId);
+    if (isNaN(tagIdNumber) || tagIdNumber <= 0) {
+      console.error('Tag ID must be a valid positive number');
+      return;
+    }
+
     setIsLoading(true);
     try {
       //  Register via REST API
       const registered = await RegisterPlayer({
         name: player.name,
-        tagId: parseInt(player.tagId) // Convert string to number
+        tagId: tagIdNumber // Use the validated number
       });
 
       if (registered && registered.id) {
@@ -96,13 +103,14 @@ export default function LoginPage() {
             </label>
             <input
               id="tagId"
-              type="text"
+              type="number"
               value={player.tagId}
               onChange={handleTagIdChange}
               placeholder="Enter your tag id..."
               disabled={isLoading}
               className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-lg text-white placeholder-gray-400"
-              maxLength={20}
+              min="1"
+              max="99999"
             />
           </div>
           <button
