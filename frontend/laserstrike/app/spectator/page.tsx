@@ -9,7 +9,7 @@ export default function SpectatorView() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const [scores, setScores] = useState<number[]>([]);//for scores
-  
+
   useEffect(() => {
      const newPlayers = [
         { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: "A1" },
@@ -64,7 +64,7 @@ export default function SpectatorView() {
                   <div className="flex items-center justify-center bg-gray-100">
                     <HealthBar current={player.health} />
                   </div>
-                  <div className="text-xs text-cyan-400 ml-2" style={{ marginRight: "20px" }}>
+                  <div className="text-xs text-cyan-400 mr-1">
                     {scores[index] ?? 0}pts
                   </div>
                 </div>
