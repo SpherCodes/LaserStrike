@@ -28,14 +28,34 @@ export default function SpectatorView() {
   }, []);
 
   return (
-    <div className="h-screen bg-black text-white relative flex">
-      {/* Toggle Button (Mobile) */}
-      <button
-        className="absolute top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-md md:hidden"
-        onClick={() => setShowSidebar(!showSidebar)}
-      >
-        {showSidebar ? "✖" : "☰"}
-      </button>
+    <div className="h-screen bg-black text-white relative flex flex-col">
+      {/* Game Header */}
+      <div className="bg-gray-900 border-b border-gray-700 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">🎯 LaserStrike Game</h1>
+            <p className="text-gray-400 text-sm">Spectator View - Live Game Monitoring</p>
+          </div>
+          <div className="flex space-x-3">
+            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+              Start Game
+            </button>
+            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+              End Game
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Game Content */}
+      <div className="flex-1 flex">
+        {/* Toggle Button (Mobile) */}
+        <button
+          className="absolute top-20 left-4 z-50 bg-gray-800 text-white p-2 rounded-md md:hidden"
+          onClick={() => setShowSidebar(!showSidebar)}
+        >
+          {showSidebar ? "✖" : "☰"}
+        </button>
 
       {/* Sidebar - Rankings */}
       <div
@@ -97,8 +117,8 @@ export default function SpectatorView() {
             alt="Enlarged snapshot"
             className="max-w-full max-h-full rounded shadow-lg"
           />
-        </div>
-      )}
+        </div>        )}
+      </div>
     </div>
   );
 }

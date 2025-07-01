@@ -18,7 +18,7 @@ def init(targets: set) -> None:
     target_words = targets
     target_patterns = [re.compile(r'\b' + re.escape(word) + r'\b', re.IGNORECASE) for word in target_words]
 
-# Proccesses image and returns the id of the player tagged
+# Processes image and returns the id of the player tagged
 def process_image(base64_image: str) -> str | None:
     image = _base64_to_image(base64_image)
     if image is None:

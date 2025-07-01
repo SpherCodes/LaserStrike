@@ -15,6 +15,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const handleCreateNewGame = () => {
+    router.push('/spactator');
+  };
+
   const handlePlayerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPlayer(prev => ({ ...prev, name: e.target.value }));
   };
@@ -34,8 +38,8 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      // 1️⃣ Register via REST API
-      const registered = await RegisterPlayer(player);  // { id, name, tagId, ... }
+      //  Register via REST API
+      const registered = await RegisterPlayer(player);
 
       if (registered && registered.id) {
         //Persist to session
@@ -106,6 +110,17 @@ export default function LoginPage() {
             <span>{isLoading ? 'Entering Battle...' : 'Enter Battle'}</span>
           </button>
         </form>
+
+        <div className="mt-6">
+          <div className="text-center text-sm text-gray-400 mb-4">or</div>
+          <button
+            onClick={handleCreateNewGame}
+            className="w-full flex items-center justify-center space-x-2 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition border border-blue-500/20"
+          >
+            <span>👥</span>
+            <span>Start Spectator View</span>
+          </button>
+        </div>
 
         <div className="mt-8 text-center text-sm text-gray-400">
           Take precise shots and dominate the leaderboard!

@@ -8,20 +8,21 @@ export const RegisterPlayer = async (player: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: player.tagId,
-        username: player.name,
+        name: player.name,
       }),
     });
-    const data = await res.json();
-
-    console.log("Registering player:", data);
 
     if (!res.ok) {
-      console.error(await res.text());
+      const errorText = await res.text();
+      console.error("Registration failed:", errorText);
       return null;
     }
+
+    const data = await res.json();
+    console.log("Registering player:", data);
+
     return data.user as Player;
   }
   console.error("No player provided");
   return null;
 };
-

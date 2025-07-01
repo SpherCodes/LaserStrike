@@ -3,23 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CameraViewer from '@/components/CameraViewer';
+import HealthBar from '@/components/healthbar';
 
 export default function HomePage() {
-  const [playerName, setPlayerName] = useState('');
+  const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [health, setHealth] = useState(10);
+  const [score, setScore] = useState(100);
+  const [strikes, setStrikes] = useState(1);
   const router = useRouter();
 
   useEffect(() => {
     const storedPlayer = sessionStorage.getItem('player');
+    console.log('Stored player data:', storedPlayer);
+    
     if (storedPlayer) {
       try {
-        const playerObj = JSON.parse(storedPlayer);
-        setPlayerName(playerObj.name || '');
-      } catch {
-        setPlayerName('');
+        const parsedPlayer = JSON.parse(storedPlayer);
+        console.log('Parsed player object:', parsedPlayer);
+        setPlayer(parsedPlayer);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error parsing stored player:', error);
+        setPlayer(null);
+        setIsLoading(false);
+        router.push('/login');
       }
-      setIsLoading(false);
     } else {
+      console.log('No stored player found, redirecting to login');
       router.push('/login');
     }
   }, [router]);
@@ -40,25 +51,80 @@ export default function HomePage() {
     );
   }
 
+  if (!player) {
+    return (
+      <div className='h-screen flex items-center justify-center bg-black'>
+        <div className='text-center text-white'>
+          <p>No player data found. Please login again.</p>
+          <button 
+            onClick={() => router.push('/login')}
+            className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Get player name from the stored object
+  const playerName = player.name || 'Unknown';
+  const playerId = player.id;
+
   return (
-    <div className='flex-1 flex flex-col'>
-      {/*  Player Info Header */}
-      <div className="bg-gradient-to-r from-black via-gray-900 to-red-900 border-b border-red-700/40 px-6 py-3 flex items-center justify-between shadow-lg relative z-10">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-400 rounded-full flex items-center justify-center text-white font-extrabold text-xl shadow-md border-2 border-white/20">
-            {playerName.charAt(0).toUpperCase()}
+    <div className='h-screen flex flex-col'>
+      {/*Player Info Header with Health Bar - Fixed at top */}
+      <div className="bg-gradient-to-r from-black via-gray-900 to-red-900 border-b border-red-700/40 px-4 py-2 shadow-lg relative z-10 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          {/* Player Info Section */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-400 rounded-full flex items-center justify-center text-white font-extrabold text-lg shadow-lg border-2 border-white/20">
+                {playerName.charAt(0).toUpperCase()}
+              </div>
+              {/* Status indicator */}
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black animate-pulse"></div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-base font-bold text-white tracking-wide">
+                <span className="text-red-400">{playerName}</span>
+              </span>
+              <span className="text-xs text-green-400 font-medium">● ACTIVE</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-semibold text-white tracking-wide">Welcome, <span className="text-red-400">{playerName}</span>!</span>
-            <span className="text-xs text-gray-300">You are ready to strike!</span>
+
+          {/* Stats and Quit Button */}
+          <div className="flex items-center gap-3">
+            {/* Score Display */}
+            <div className="text-center">
+              <div className="text-sm font-bold text-yellow-400">{score.toLocaleString()}</div>
+              <div className="text-xs text-gray-400 uppercase">Score</div>
+            </div>
+            
+            {/* Strikes Count */}
+            <div className="text-center">
+              <div className="text-sm font-bold text-white">{strikes}</div>
+              <div className="text-xs text-gray-400 uppercase">Strikes</div>
+            </div>
+
+            {/* Quit Button */}
+            <button
+              onClick={handleExit}
+              className="px-3 py-1 rounded-lg bg-black/60 hover:bg-red-600 hover:text-white text-gray-300 text-xs font-medium border border-red-700/30 transition-all duration-200 shadow-md"
+            >
+              Quit
+            </button>
           </div>
         </div>
-        <button
-          onClick={handleExit}
-          className="px-4 py-1 rounded-lg bg-black/60 hover:bg-red-600 hover:text-white text-gray-300 text-xs font-medium border border-red-700/30 transition-colors duration-150 shadow"
-        >
-          Quit
-        </button>
+
+        {/* Health Bar Section - Compact */}
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs font-medium text-gray-300">Health</span>
+          <div className="flex-1 max-w-xs">
+            <HealthBar current={health} max={10} />
+          </div>
+          <span className="text-xs font-bold text-green-400">{health}/10</span>
+        </div>
       </div>
       {/* Camera View Container - Full remaining space */}
       <div className='flex-1 relative overflow-hidden'>

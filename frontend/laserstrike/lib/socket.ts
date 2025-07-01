@@ -20,8 +20,9 @@ export const getSocket = (userId: string) => {
 };
 export default getSocket;
 
-export const sendImageToServer = (image: string): void => {
+export const sendImageToServer = (image: string, playerId: string): void => {
     if (socket) {
-        socket.send(image);
+       //Send the image data to the server
+        socket.send(JSON.stringify({ image, playerId }));
     }
 };
