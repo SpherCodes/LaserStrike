@@ -8,7 +8,14 @@ const pendingCallbacks = new Map<string, ResponseCallback>();
 
 export const getSocket = (userId: number) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    if (typeof window === 'undefined') return null; // Server-side guard
+    
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      console.error("API URL is not configured. Please set NEXT_PUBLIC_API_URL in environment variables.");
+      return null;
+    }
+    
     const wsUrl = apiUrl
       .replace("http://", "ws://")
       .replace("https://", "wss://");

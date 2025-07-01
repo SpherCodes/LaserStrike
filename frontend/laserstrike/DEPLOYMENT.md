@@ -28,7 +28,7 @@ After deployment, set environment variables in Vercel Dashboard:
 
 | Name | Value | Environment |
 |------|-------|-------------|
-| `NEXT_PUBLIC_API_URL` | `https://your-backend-url` | Production |
+| `NEXT_PUBLIC_API_URL` | `https://laserstrike.onrender.com` | Production |
 | `NODE_ENV` | `production` | Production |
 
 ### 3. GitHub Integration (Recommended)

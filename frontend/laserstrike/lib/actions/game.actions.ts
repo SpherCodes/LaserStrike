@@ -4,14 +4,13 @@ export const RegisterPlayer = async (player: {
   name: string;
   tagId: number;
 }): Promise<Player | null> => {
-  if (!player || !player.name || !player.tagId || player.tagId <= 0) {
-    console.error("Invalid player data provided");
-    return null;
-  }
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  
-  try {
+  if (player) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      console.error("API URL is not configured. Please set NEXT_PUBLIC_API_URL in environment variables.");
+      throw new Error("API URL is not configured");
+    }
+    
     const res = await fetch(`${apiUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,17 +21,16 @@ export const RegisterPlayer = async (player: {
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({ detail: "Unknown error" }));
-      console.error("Registration failed:", errorData);
+      const errorText = await res.text();
+      console.error("Registration failed:", errorText);
       return null;
     }
 
     const data = await res.json();
-    console.log("Registration successful:", data);
+    console.log("Registering player:", data);
 
     return data.user as Player;
-  } catch (error) {
-    console.error("Network error during registration:", error);
-    return null;
   }
+  console.error("No player provided");
+  return null;
 };
