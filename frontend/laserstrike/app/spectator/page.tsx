@@ -33,19 +33,19 @@ export default function SpectatorView() {
   }, []);
 
   return (
-    <div className="h-screen bg-black text-white relative flex flex-col">
-      {/* Game Header */}
-      <div className="bg-gray-900 border-b border-gray-700 p-4">
+    <div className="h-screen bg-gray-950 text-white relative flex flex-col">
+      {/* Simple Header */}
+      <div className="bg-gray-900 border-b border-gray-700 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">🎯 LaserStrike Game</h1>
-            <p className="text-gray-400 text-sm">Spectator View - Live Game Monitoring</p>
+            <h1 className="text-2xl font-bold text-white">🎯 LaserStrike</h1>
+            <p className="text-gray-400 text-sm">Live Game Monitor</p>
           </div>
           <div className="flex space-x-3">
-            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+            <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm">
               Start Game
             </button>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+            <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm">
               End Game
             </button>
           </div>
@@ -54,78 +54,122 @@ export default function SpectatorView() {
 
       {/* Main Game Content */}
       <div className="flex-1 flex">
-        {/* Toggle Button (Mobile) */}
+        {/* Mobile Toggle */}
         <button
-          className="absolute top-20 left-4 z-50 bg-gray-800 text-white p-2 rounded-md md:hidden"
+          className="absolute top-24 left-4 z-50 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-md md:hidden transition"
           onClick={() => setShowSidebar(!showSidebar)}
         >
-          {showSidebar ? "✖" : "☰"}
+          {showSidebar ? "✕" : "☰"}
         </button>
 
-      {/* Sidebar - Rankings */}
-      <div
-        className={`bg-black border-r border-gray-700 p-3 overflow-auto transition-transform duration-300 ease-in-out z-40
-          fixed top-0 left-0 h-full w-64 
+        {/* Rankings Sidebar */}
+        <div
+          className={`bg-gray-900 border-r border-gray-700 p-4 overflow-auto transition-transform duration-300 ease-in-out z-40
+          fixed top-0 left-0 h-full w-72 
           transform ${showSidebar ? "translate-x-0" : "-translate-x-full"} 
-          md:static md:translate-x-0 md:w-1/4 md:block`}
-      >
-        <h2 className="text-lg font-semibold mb-2">Rankings</h2>
-        <ul className="space-y-4" style={{ marginLeft: "-10px" }}>
-          {players.map((player, index) => (
-            <li
-              key={player.id}
-              className="grid grid-cols-[50px_50px_1fr] gap-3 items-center py-2"
-              style={{ marginBottom: "8px" }}
-            >
-              <div className="text-sm font-normal text-center">{index + 1}</div>
-              <div className="text-3xl font-light leading-none text-center">{player.id}</div>
-              <div className="flex flex-col space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center justify-center bg-gray-100">
-                    <HealthBar current={player.health} />
+          md:static md:translate-x-0 md:w-1/3 md:block`}
+        >
+          <h2 className="text-lg font-semibold mb-4 text-white">🏆 Rankings</h2>
+          <div className="space-y-3">
+            {players.map((player, index) => (
+              <div
+                key={player.id}
+                className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold">
+                      {player.id}
+                    </div>
+                    <div>
+                      <div className="font-medium text-white">{player.name}</div>
+                      <div className="text-xs text-gray-400">K:{player.kills} D:{player.deaths}</div>
+                    </div>
                   </div>
-                  <div className="text-xs text-cyan-400 mr-1">
-                    {scores[index] ?? 0}pts
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-cyan-400">{scores[index] ?? 0}</div>
+                    <div className="text-xs text-gray-400">points</div>
                   </div>
                 </div>
-                <div className="text-sm font-medium text-white">{player.name}</div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Health</span>
+                    <span className="text-white">{player.health}%</span>
+                  </div>
+                  <HealthBar current={player.health} />
+                </div>
               </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Main Content - Snapshots */}
-      <div className="flex-1 p-3 overflow-auto">
-        <h2 className="text-lg font-semibold mb-2">Snapshots</h2>
-        
-        <div className="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
-          {snapshots.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`Snapshot ${index + 1}`}
-              className="w-full h-64 object-cover rounded cursor-pointer hover:opacity-80"
-              onClick={() => setSelectedImage(src)}
-            />
-          ))}
+        {/* Snapshots Content */}
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">📸 Battle Snapshots</h2>
+            <div className="text-sm text-gray-400">{snapshots.length} photos</div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {snapshots.slice(0, 12).map((src, index) => (
+              <div
+                key={index}
+                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition cursor-pointer"
+                onClick={() => setSelectedImage(src)}
+              >
+                <img
+                  src={src}
+                  alt={`Battle snapshot ${index + 1}`}
+                  className="w-full h-48 object-cover hover:opacity-90 transition"
+                />
+                <div className="p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-300">Shot #{index + 1}</span>
+                    <span className="text-xs text-gray-500">
+                      {Math.floor(Math.random() * 60)}s ago
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {snapshots.length === 0 && (
+            <div className="text-center py-16">
+              <div className="text-4xl mb-4 opacity-50">📷</div>
+              <p className="text-gray-400">No battle snapshots yet</p>
+            </div>
+          )}
         </div>
       </div>
 
-
-      {/* Modal for enlarged image */}
+      {/* Simple Modal */}
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <img
-            src={selectedImage}
-            alt="Enlarged snapshot"
-            className="max-w-full max-h-full rounded shadow-lg"
-          />
-        </div>        )}
-      </div>
+          <div className="relative">
+            <img
+              src={selectedImage}
+              alt="Enlarged snapshot"
+              className="max-w-full max-h-full rounded-lg"
+            />
+            <button
+              className="absolute top-4 right-4 w-8 h-8 bg-black/70 hover:bg-black/90 text-white rounded-full flex items-center justify-center transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

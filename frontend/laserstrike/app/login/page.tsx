@@ -16,7 +16,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleCreateNewGame = () => {
-    router.push('/spactator');
+    router.push('/spectator');
   };
 
   const handlePlayerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
