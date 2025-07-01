@@ -35,6 +35,7 @@ export default function SpectatorView() {
       { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
       { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
       { name: "Other", health: 1, kills: 1, deaths: 9, id: "A5" },
+      { name: "Other2", health: 1, kills: 9, deaths: 0, id: "A6" },
     ];
     //Calculating scores based on kills, deaths, and health
     // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.
@@ -47,7 +48,7 @@ export default function SpectatorView() {
 
       const killScore = 100;
       const deathBonus = 10;
-      const healthBonus = 0.5;
+      const healthBonus = 0.001;
 
       const score = Math.round((kills * killScore) + (deaths * deathBonus) + (health * healthBonus));
 

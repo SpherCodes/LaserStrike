@@ -42,6 +42,16 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
+/* Spin animation */
+@keyframes spin-slow {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
 /* Stylish Snapshots Content */
 .snapshots-grid {
   display: grid;

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegisterPlayer } from '@/lib/actions/game.actions';
 import { getSocket } from '@/lib/socket';
+import TargetIcon from '@/components/TargetIcon';
 
 interface PlayerRegisterProps {
   name: string;
@@ -64,7 +65,7 @@ export default function LoginPage() {
     <div className="h-screen flex items-center justify-center bg-gradient-to-br from-red-900 via-black to-gray-900 p-6">
       <div className="w-full max-w-md bg-black/80 backdrop-blur rounded-2xl shadow-2xl p-8 border border-red-500/20">
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎯</div>
+          <TargetIcon />
           <h1 className="text-3xl font-bold text-white mb-2">LaserStrike</h1>
           <p className="text-gray-100">Enter your name to join the battle</p>
         </div>
