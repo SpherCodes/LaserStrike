@@ -99,7 +99,7 @@ export default function SpectatorView() {
         {/* Rankings Sidebar */}
         <div
           className={`bg-gray-900 border-r border-gray-700 p-4 overflow-auto transition-transform duration-300 ease-in-out z-40
-          fixed top-0 left-0 h-full w-56
+          fixed top-0 left-0 min-h-full w-56
           transform ${showSidebar ? "translate-x-0" : "-translate-x-full"}
           md:static md:translate-x-0 md:w-1/4 md:block`}
         >
