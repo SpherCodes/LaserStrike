@@ -20,16 +20,24 @@ export default function SpectatorView() {
     const playersWithScores = newPlayers.map((player) => {
         const kills = player.kills ?? 0;
         const deaths = player.deaths ?? 0;
-        const score = (kills * 100) - (deaths * 50);
-        return { player, score: score < 0 ? 0 : score };
+        const health = player.health ?? 0;
+
+        const killScore = 100;
+        const deathBonus = 10;
+        const healthBonus = 0.5;
+
+        const score = Math.round((kills * killScore) + (deaths * deathBonus) + (health * healthBonus));
+
+        return { player, score };
     });
+
     
     playersWithScores.sort((a, b) => b.score - a.score);
     const sortedPlayers = playersWithScores.map((p) => p.player);
     const sortedScores = playersWithScores.map((p) => p.score);
     setPlayers(sortedPlayers);
     setScores(sortedScores);
-    setSnapshots(Array.from({ length: 200 }, () => "https://via.placeholder.com/150"));
+    setSnapshots(Array.from({ length: 20 }, () => "/vercel.svg"));
   }, []);
 
   return (
@@ -65,7 +73,7 @@ export default function SpectatorView() {
                     <HealthBar current={player.health} />
                   </div>
                   <div className="text-xs text-cyan-400 mr-1">
-                    {scores[index] ?? 0}pts
+                    {scores[index] ?? 0} pts
                   </div>
                 </div>
                 <div className="text-sm font-medium text-white">{player.name}</div>
