@@ -6,13 +6,13 @@ type ResponseCallback = (success: boolean, message?: string) => void;
 // Store pending callbacks with request IDs
 const pendingCallbacks = new Map<string, ResponseCallback>();
 
-export const getSocket = (userId: string) => {
+export const getSocket = (userId: number) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const wsUrl = apiUrl
       .replace("http://", "ws://")
       .replace("https://", "wss://");
-    socket = new WebSocket(`${wsUrl}/ws/${userId}`);
+    socket = new WebSocket(`${wsUrl}/ws/${userId.toString()}`);
     socket.onopen = () => {
       console.log("WebSocket connection established");
     };
@@ -66,7 +66,7 @@ const generateRequestId = (): string => {
 // Send image with callback for response
 export const sendImageToServer = (
   image: string,
-  playerId: string,
+  playerId: number,
   callback?: ResponseCallback
 ): void => {
   if (socket && socket.readyState === WebSocket.OPEN) {
@@ -77,13 +77,17 @@ export const sendImageToServer = (
       pendingCallbacks.set(requestId, callback);
     }
 
+    console.log(
+      JSON.stringify({
+        image,
+        playerId,
+      })
+    );
     // Send the image data with request ID
     socket.send(
       JSON.stringify({
-        type: "image",
         image,
-        playerId,
-        requestId,
+        playerId
       })
     );
 

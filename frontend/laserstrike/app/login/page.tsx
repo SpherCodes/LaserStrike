@@ -8,7 +8,7 @@ import TargetIcon from '@/components/TargetIcon';
 
 interface PlayerRegisterProps {
   name: string;
-  tagId: string;
+  tagId: number;
 }
 
 export default function LoginPage() {

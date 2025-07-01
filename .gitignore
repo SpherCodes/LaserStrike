@@ -53,6 +53,7 @@ frontend/*/dist/
 .DS_Store
 *.pem
 Thumbs.db
+*.pyc
 
 # Debug logs
 npm-debug.log*
@@ -86,3 +87,6 @@ Thumbs.db
 # Dev tunnels and local configs
 .azure/
 .devcontainer/
+
+#editor
+.idea

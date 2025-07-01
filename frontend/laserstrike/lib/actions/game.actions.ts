@@ -2,7 +2,7 @@ import { Player } from "../Types";
 
 export const RegisterPlayer = async (player: {
   name: string;
-  tagId: string;
+  tagId: number;
 }): Promise<Player | null> => {
   if (player) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

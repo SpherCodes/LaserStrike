@@ -6,9 +6,9 @@ export type Player = {
     health:number;
 };
 
-declare interface PlayerRegisterProps {
-  name: string;
-  tagId: string;
+declare interface PlayerRegisterProps{
+    name: string;
+    tagId: number;
 }
 
 declare type GameState = {
