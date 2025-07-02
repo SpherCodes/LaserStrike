@@ -97,92 +97,49 @@ export default function SpectatorView() {
         </button>
 
         {/* Rankings Sidebar */}
+        
         <div
-          className={`bg-gray-900 border-r border-gray-700 p-4 overflow-auto transition-transform duration-300 ease-in-out z-40
-          fixed top-0 left-0 min-h-full w-56
+          className={`bg-gray-900 border-r border-gray-700 p-4 overflow-y-auto transition-transform duration-300 ease-in-out z-40
+          fixed top-0 left-0 min-h-full w-[18%]
           transform ${showSidebar ? "translate-x-0" : "-translate-x-full"}
-          md:static md:translate-x-0 md:w-1/4 md:block`}
+          md:static md:translate-x-0 md:w-[12%] md:block rankings-sidebar`}
+          style={{ maxHeight: 'calc(100vh - 3rem)' }} // 3rem for header
         >
           <div className="flex items-center mb-4 space-x-2">
-            {/* Stylish icon for rankings */}
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-red-500 to-red-900 shadow-lg">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <circle cx="11" cy="11" r="10" stroke="#fff" strokeWidth="2" fill="none"/>
-                <path d="M11 5v7l4 2" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <span className="inline-flex items-center justify-center w-2rem h-2rem rounded-full bg-gradient-to-br from-yellow-400 via-red-500 to-red-900 shadow-lg">
+              <svg className="w-1.25rem h-1.25rem text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
             </span>
-            <h2 className="text-xl font-bold text-yellow-200 tracking-wide drop-shadow">Rankings</h2>
+            <span className="font-bold text-lg text-white">Rankings</span>
           </div>
-          <div className="space-y-3">
-            {players.map((player, index) => {
-              const isTop3 = index < 3;
-              // Choose a color for each top 3 rank
-              const rankColors = [
-                "from-yellow-400 to-yellow-600 text-yellow-900 border-yellow-400", // 1st
-                "from-gray-300 to-gray-500 text-gray-900 border-gray-300",         // 2nd
-                "from-amber-500 to-orange-700 text-orange-900 border-amber-400"    // 3rd
-              ];
-              return (
-                <div
-                  key={player.id}
-                  className={
-                    isTop3
-                      ? "bg-gray-800 rounded-lg p-5 border border-gray-700 hover:border-gray-600 transition"
-                      : "bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition scale-95"
-                  }
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={
-                          isTop3
-                            ? `w-12 h-12 bg-gradient-to-br ${rankColors[index]} border-2 rounded-full flex items-center justify-center text-2xl font-extrabold shadow-lg`
-                            : "w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold"
-                        }
-                      >
-                        {index + 1}
-                      </div>
-                      {/* Avatar image */}
-                      <div
-                        className={
-                          isTop3
-                            ? "w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl font-bold overflow-hidden"
-                            : "w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold overflow-hidden"
-                        }
-                      >
-                        <img
-                          src={`/images/avatars/${(index % 5) + 1}.png`}
-                          alt={`Avatar ${(index % 5) + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <div className={isTop3 ? "font-bold text-lg text-white" : "font-medium text-base text-white"}>
-                          {player.name}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={isTop3 ? "text-lg font-extrabold text-cyan-300" : "text-sm font-bold text-cyan-400"}>
-                        {scores[index] ?? 0}
-                      </div>
-                      <div className={isTop3 ? "text-xs text-gray-300" : "text-xs text-gray-400"}>points</div>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-400">Health</span>
-                      <span className={isTop3 ? "text-white font-bold" : "text-white"}>{player.health}%</span>
-                    </div>
-                    <HealthBar current={player.health} />
-                    <div className="flex justify-between text-xs mt-1">
-                      <span className="text-gray-400">Kills: <span className="text-green-400 font-semibold">{player.kills}</span></span>
-                      <span className="text-gray-400">Deaths: <span className="text-red-400 font-semibold">{player.deaths}</span></span>
-                    </div>
+          <div className="space-y-2">
+            {players.map((player, index) => (
+              <div
+                key={player.id}
+                className="flex flex-col bg-gray-800 rounded-lg px-[0.5em] py-[0.25em] border border-gray-700 hover:border-gray-600 transition"
+                style={{ minWidth: 0 }}
+              >
+                <div className="flex items-center justify-between min-w-0">
+                  <span className="truncate font-semibold text-white text-xs">{index + 1}. {player.name}</span>
+                  <div className="ml-[0.5em] flex-shrink-0 text-right">
+                    <span className="block text-[0.625rem] text-gray-300 font-bold">Score</span>
+                    <span className="block text-base text-cyan-400 font-extrabold">{scores[index] ?? 0}</span>
                   </div>
                 </div>
-              );
-            })}
+                <span className="truncate text-[0.6875rem] text-gray-400">
+                  Health: <span className="text-green-400">{player.health}</span> | 
+                  K: <span className="text-cyan-300">{player.kills}</span> | 
+                  D: <span className="text-red-400">{player.deaths}</span>
+                </span>
+                {/* Show health bar only if few players */}
+                {players.length <= 6 && (
+                  <div className="mt-[0.25em] mb-[0.25em]">
+                    <HealthBar current={player.health} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -254,7 +211,6 @@ export default function SpectatorView() {
           </div>
         </div>
       )}
-      {/* Snapshots in base64 format */}
     </div>
   );
 }

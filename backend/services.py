@@ -34,6 +34,10 @@ def process_shot(data: str) -> int | None:
         users[data_obj["player_id"]].kills += 1
         users[target_id].deaths +=1
         users[target_id].health -=1
+        users[data_obj["player_id"]].score += 10
+        # Check if target is dead
+        if users[target_id].health <= 0:
+            users[target_id].isLive = False
         add_image(image_data)
         return target_id
 
