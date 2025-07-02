@@ -97,11 +97,17 @@ async def delete_user(user_id: int):
 async def get_images():
     return list_recent_images()
 
-@app.api_route("/admin/reset")
+@app.api_route("/admin/reset", methods=["GET", "POST"])
 async def reset():
     reset_game()
     if len(list_users().keys())==0:
-        return {"status": "ok", "message": "Reset server"}
+        # Broadcast a reset notification to all connected players
+        reset_message = {
+            "type": "game_reset", 
+            "message": "Game has been reset by admin"
+        }
+        await c_manager.broadcast(json.dumps(reset_message))
+        return {"status": "ok", "message": "Reset server and notified all players"}
     return {"status": "Bad Request", "message": "Failed to reset server"}
 
 @app.websocket("/ws/{user_id}")

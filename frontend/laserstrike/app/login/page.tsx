@@ -113,17 +113,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* <div className="mt-6">
-          <div className="text-center text-sm text-gray-400 mb-4">or</div>
-          <button
-            onClick={handleCreateNewGame}
-            className="w-full flex items-center justify-center space-x-2 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition border border-blue-500/20"
-          >
-            <span>👥</span>
-            <span>Start Spectator View</span>
-          </button>
-        </div> */}
-
         <div className="mt-8 text-center text-sm text-gray-400">
           Take precise shots and dominate the leaderboard!
         </div>

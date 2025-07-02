@@ -13,20 +13,6 @@ export default function SpectatorView() {
   const router = useRouter();
 
   useEffect(() => {
-    // --- Skeleton for fetching players and snapshots ---
-    // (Uncomment and implement your API calls here)
-    /*
-    async function fetchPlayersAndSnapshots() {
-      const playersRes = await fetch('/api/players');
-      const playersData = await playersRes.json();
-      setPlayers(playersData);
-
-      const snapshotsRes = await fetch('/api/snapshots');
-      const snapshotsData = await snapshotsRes.json();
-      setSnapshots(snapshotsData);
-    }
-    fetchPlayersAndSnapshots();
-    */
 
     // --- Test data (keep for now) ---
     const newPlayers = [

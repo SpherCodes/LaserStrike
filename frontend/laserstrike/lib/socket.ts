@@ -5,12 +5,15 @@ let socket: WebSocket | null = null;
 // Callback type for handling responses
 type ResponseCallback = (success: boolean, message?: string) => void;
 type ShotEventCallback = (event: ShotEvent) => void;
+type GameResetCallback = () => void;
 
 // Store pending callbacks with request IDs
 const pendingCallbacks = new Map<string, ResponseCallback>();
 
 // Store event listeners for shot events
 const shotEventListeners = new Set<ShotEventCallback>();
+// Store event listeners for game reset events
+const gameResetListeners = new Set<GameResetCallback>();
 
 export const getSocket = (userId: number) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -67,13 +70,29 @@ export const getSocket = (userId: number) => {
           return;
         }
 
-        // Handle general boolean responses
+        // Handle general boolean responses  to check if shot missed or not
         if (typeof response.success === "boolean") {
           console.log(
             `Operation ${response.success ? "successful" : "failed"}`
           );
           if (response.message) {
             console.log("Message:", response.message);
+          }
+        }
+
+        if (response.type === "game_reset") {
+          console.log("Game has been reset");
+
+          // Notify all game reset listeners
+          gameResetListeners.forEach((listener) => {
+            listener();
+          });
+
+          // Clear player session
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("player");
+            // Redirect to login page
+            window.location.href = "/login";
           }
         }
       } catch (error) {
@@ -89,6 +108,8 @@ export const getSocket = (userId: number) => {
       pendingCallbacks.clear();
       // Clear shot event listeners
       shotEventListeners.clear();
+      // Clear game reset listeners
+      gameResetListeners.clear();
     };
   }
   return socket;
@@ -107,6 +128,16 @@ export const onShotEvent = (callback: ShotEventCallback): (() => void) => {
   // Return a function to remove the listener
   return () => {
     shotEventListeners.delete(callback);
+  };
+};
+
+// Register a listener for game reset events
+export const onGameReset = (callback: GameResetCallback): (() => void) => {
+  gameResetListeners.add(callback);
+
+  // Return a function to remove the listener
+  return () => {
+    gameResetListeners.delete(callback);
   };
 };
 

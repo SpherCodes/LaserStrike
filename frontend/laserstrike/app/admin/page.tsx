@@ -1,8 +1,7 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import HealthBar from "@/components/healthbar";
 import { Player } from "@/lib/Types";
-import { useRouter } from "next/navigation";
 
 export default function SpectatorView() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -11,46 +10,73 @@ export default function SpectatorView() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const [scores, setScores] = useState<number[]>([]);
-  const router = useRouter();
+
+  // Function to fetch players and snapshots data
+  const fetchPlayersAndSnapshots = useCallback(async () => {
+    try {
+      const playersRes = await fetch(`${apiUrl}/users`);
+      const playersJson = await playersRes.json();
+      const playersData: Player[] = Object.values(playersJson);
+
+      const snapshotsRes = await fetch(`${apiUrl}/admin/images`);
+      const snapshotsData: string[] = await snapshotsRes.json();
+
+      console.log("Fetched players:", playersData);
+      // Calculate scores just like in the test data
+      type PlayerWithScore = { player: Player; score: number };
+      const playersWithScores: PlayerWithScore[] = playersData.map((player: Player) => {
+        const kills = player.kills ?? 0;
+        const deaths = player.deaths ?? 0;
+        const health = player.health ?? 0;
+        const score = Math.round(kills * 100 + deaths * 10 + health * 0);
+        return { player, score };
+      });
+
+      playersWithScores.sort((a: PlayerWithScore, b: PlayerWithScore) => b.score - a.score);
+      setPlayers(playersWithScores.map((p) => p.player));
+      setScores(playersWithScores.map((p) => p.score));
+      setSnapshots(snapshotsData);
+    } catch (err) {
+      console.error("Failed to fetch players or snapshots", err);
+    }
+  }, [apiUrl]);
 
   useEffect(() => {
-
-    async function fetchPlayersAndSnapshots() {
-      try {
-        const playersRes = await fetch(`${apiUrl}/users`);
-        const playersJson = await playersRes.json();
-        const playersData: Player[] = Object.values(playersJson);
-
-        const snapshotsRes = await fetch(`${apiUrl}/admin/images`);
-        const snapshotsData: string[] = await snapshotsRes.json();
-
-        console.log("Fetched players:", playersData);
-        console.log(typeof(playersData));
-        // Calculate scores just like in the test data
-        type PlayerWithScore = { player: Player; score: number };
-        const playersWithScores: PlayerWithScore[] = playersData.map((player: Player) => {
-          const kills = player.kills ?? 0;
-          const deaths = player.deaths ?? 0;
-          const health = player.health ?? 0;
-          const score = Math.round(kills * 100 + deaths * 10 + health * 0);
-          return { player, score };
-        });
-
-        playersWithScores.sort((a: PlayerWithScore, b: PlayerWithScore) => b.score - a.score);
-        setPlayers(playersWithScores.map((p) => p.player));
-        setScores(playersWithScores.map((p) => p.score));
-        setSnapshots(snapshotsData);
-      } catch (err) {
-        console.error("Failed to fetch players or snapshots", err);
-      }
-    }
-
     fetchPlayersAndSnapshots();
-   const interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
+    const interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
 
     return () => clearInterval(interval);
-  }, [apiUrl]);
+  }, [apiUrl, fetchPlayersAndSnapshots]);
   
+  // Function to reset the game
+  const resetGame = async () => {
+    // Show confirmation dialog
+    const confirmReset = window.confirm("Are you sure you want to reset the game? This will clear all player data and scores.");
+    
+    if (!confirmReset) {
+      return; // User cancelled the reset
+    }
+    
+    try {
+      const response = await fetch(`${apiUrl}/admin/reset`, {
+        method: 'GET',
+      });
+      
+      const result = await response.json();
+      
+      if (result.status === "ok") {
+        alert("Game reset successful! All players and scores have been cleared.");
+        // Refresh the page data
+        fetchPlayersAndSnapshots();
+      } else {
+        alert(`Failed to reset the game: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error resetting the game:", error);
+      alert("An error occurred while trying to reset the game. Please check the console for details.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white relative flex flex-col">
       {/* Simple Header */}
@@ -62,23 +88,14 @@ export default function SpectatorView() {
           </div>
           <div className="flex space-x-3">
             <button
-              className="btn-shine btn-move px-5 py-2 bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-green-400/30 relative"
-              onClick={() => router.push('/start')}
+              className="btn-shine btn-move px-5 py-2 bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 text-white rounded-lg shadow-lg hover:from-yellow-600 hover:to-yellow-800 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-yellow-400/30 relative"
+              onClick={resetGame}
               style={{ zIndex: 0 }}
             >
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Start Game
-            </button>
-            <button
-              className="btn-shine btn-move px-5 py-2 bg-gradient-to-br from-red-600 via-red-700 to-red-900 text-white rounded-lg shadow-lg hover:from-red-700 hover:to-red-950 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-red-400/30 relative"
-              style={{ zIndex: 0 }}
-            >
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              End Game
+              Reset Game
             </button>
           </div>
         </div>
