@@ -8,11 +8,6 @@ import { Player } from '@/lib/Types';
 import { getSocket } from '@/lib/socket';
 import CameraViewer from '@/components/CameraViewer';
 
-// const CameraViewer = dynamic(
-//   () => import('@/components/CameraViewer'),
-//   { ssr: false }
-// )
-
 export default function HomePage() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(true);

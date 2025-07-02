@@ -5,9 +5,6 @@ from fastapi.websockets import WebSocketState
 from services import *  # Using original services with computer vision
 from models import User
 
-
-# TODO: update both players after successful shot, add images of successful shot
-# TODO: spectator view
 # TODO: single git ignore and readme
 
 class ConnectionManager:
@@ -22,6 +19,9 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
         if len(self.active_connections) == 0:
             print("No active connections")
+    
+    def disconnect_everyone(self) -> None:
+        self.active_connections.clear()
 
     async def broadcast(self, message: str) -> None:
         # Create a list to track connections that need to be removed
@@ -85,7 +85,6 @@ async def get_user(user_id: int):
         print(e)
         return {"message": f"User with user_id:{user_id} not found"}
 
-
 @app.delete("/users/{user_id}")
 async def delete_user(user_id: int):
     try:
@@ -95,10 +94,20 @@ async def delete_user(user_id: int):
     except HTTPException as e:
         print(e)
         return {"message": f"User with user_id:{user_id} not found"}
-    
+
+# TODO: secure these admin routes and the admin screen!
 @app.get("/admin/images")
 async def get_images():
     return list_recent_images()
+
+@app.api_route("/admin/reset", methods=["GET", "POST"])
+async def reset():
+    reset_game()
+    if len(list_users().keys())==0:
+        c_manager.broadcast({"type":"game_reset","message":"Game has been reset by admin"})
+        c_manager.disconnect_everyone()
+        return {"status": "ok", "message": "Reset server"}
+    return {"status": "Bad Request", "message": "Failed to reset server"}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
