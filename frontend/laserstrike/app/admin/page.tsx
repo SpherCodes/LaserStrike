@@ -142,7 +142,7 @@ export default function SpectatorView() {
                       >
                         {index + 1}
                       </div>
-                      {/* Avatar image */}
+                      {/* Avatar image
                       <div
                         className={
                           isTop3
@@ -155,7 +155,7 @@ export default function SpectatorView() {
                           alt={`Avatar ${(index % 5) + 1}`}
                           className="w-full h-full object-cover"
                         />
-                      </div>
+                      </div> */}
                       <div>
                         <div className={isTop3 ? "font-bold text-lg text-white" : "font-medium text-base text-white"}>
                           {player.name}
@@ -254,7 +254,6 @@ export default function SpectatorView() {
           </div>
         </div>
       )}
-      {/* Snapshots in base64 format */}
     </div>
   );
 }

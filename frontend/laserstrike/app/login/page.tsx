@@ -106,7 +106,7 @@ export default function LoginPage() {
               maxLength={20}
             />
           </div>
-          <AvatarSelector />
+          {/* <AvatarSelector /> */}
           <button
             type="submit"
             disabled={isLoading}
