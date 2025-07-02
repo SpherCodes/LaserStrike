@@ -8,6 +8,7 @@ import { Player } from '@/lib/Types';
 import { getSocket } from '@/lib/socket';
 import CameraViewer from '@/components/CameraViewer';
 import GameOver from '@/components/GameOver';
+import { ExitGame } from '@/lib/actions/game.actions';
 
 export default function HomePage() {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -56,7 +57,12 @@ export default function HomePage() {
 
   const handleExit = () => {
     sessionStorage.removeItem('player');
-    router.push('/login');
+    ExitGame(player as Player).then(success => {
+      if (success) {
+        router.push('/login');
+      }
+      return;
+    })
   };
 
   // Handle player updates from CameraViewer
@@ -191,7 +197,8 @@ export default function HomePage() {
             {/* Deaths */}
             <div className="text-center">
               <div className="text-sm font-bold text-red-400">{deaths}</div>
-              <div className="text-xs text-gray-400 uppercase">Deaths</div>
+              {/* renamed deaths to hits taken */}
+              <div className="text-xs text-gray-400 uppercase">hits takes</div>
             </div>
 
             {/* Quit Button */}
