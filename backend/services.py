@@ -5,7 +5,7 @@ from models import User
 model = Model()
 users = {}
 recent_images = []
-# image object aka data, image and shooter_id
+
 def add_user(new_user: User) -> None:
     users[new_user.id] = new_user
 
@@ -48,3 +48,7 @@ def add_image(image: str) -> None:
 
 def list_recent_images() -> str:
     return recent_images
+
+def reset_game() -> None:
+    users.clear()
+    recent_images.clear()

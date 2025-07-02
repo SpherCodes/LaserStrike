@@ -5,9 +5,6 @@ from fastapi.websockets import WebSocketState
 from services import *  # Using original services with computer vision
 from models import User
 
-
-# TODO: update both players after successful shot, add images of successful shot
-# TODO: spectator view
 # TODO: single git ignore and readme
 
 class ConnectionManager:
@@ -85,7 +82,6 @@ async def get_user(user_id: int):
         print(e)
         return {"message": f"User with user_id:{user_id} not found"}
 
-
 @app.delete("/users/{user_id}")
 async def delete_user(user_id: int):
     try:
@@ -95,10 +91,18 @@ async def delete_user(user_id: int):
     except HTTPException as e:
         print(e)
         return {"message": f"User with user_id:{user_id} not found"}
-    
+
+# TODO: secure these admin routes and the admin screen!
 @app.get("/admin/images")
 async def get_images():
     return list_recent_images()
+
+@app.api_route("/admin/reset")
+async def reset():
+    reset_game()
+    if len(list_users().keys())==0:
+        return {"status": "ok", "message": "Reset server"}
+    return {"status": "Bad Request", "message": "Failed to reset server"}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
