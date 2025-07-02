@@ -16,9 +16,11 @@ const CameraViewer: React.FC<{
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
   const soundPaths = Array.from({ length: 20 }, (_, i) => `/sounds/shoot${i}.wav`);
+  const audioCtx = new AudioContext();
+  const soundBuffers: AudioBuffer[] = [];
   const [showShotNotification, setShowShotNotification] = useState(false);
   // const [notificationMessage, setNotificationMessage] = useState('');
-  
+  preloadSounds()
   // Subscribe to shot events
   const shotEvent = useShotEvents();
 
@@ -143,9 +145,23 @@ const CameraViewer: React.FC<{
     }
   }, [showShotNotification]);
 
+
+  async function preloadSounds() {
+    for (const path of soundPaths) {
+      const response = await fetch(path);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      soundBuffers.push(audioBuffer);
+    }
+  }
+
   function playSound(pId: number) {
-    const audio = new Audio(soundPaths[pId]);
-    audio.play().catch((e) => console.error("Failed to play sound:", e));
+    const buffer = soundBuffers[pId];
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+
+    source.start(0, 0, 0.5);
   }
   // Capture frame and send
   const takePhoto = () => {
