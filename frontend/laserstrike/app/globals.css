@@ -55,31 +55,31 @@ body {
 /* Stylish Snapshots Content */
 .snapshots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16.25rem, 1fr)); /* 260px -> 16.25rem */
   gap: 1.5rem;
 }
 
 .snapshot-card {
   background: linear-gradient(135deg, #1a1a1a 60%, #2d0b0b 100%);
-  border: 1.5px solid #3b0a0a;
+  border: 0.09375rem solid #3b0a0a; /* 1.5px -> 0.09375rem */
   border-radius: 1.25rem;
   overflow: hidden;
-  box-shadow: 0 4px 24px 0 #000a, 0 1.5px 0 #ff3c3c inset;
+  box-shadow: 0 0.25rem 1.5rem 0 #000a, 0 0.09375rem 0 #ff3c3c inset; /* 4px 24px 1.5px */
   transition: transform 0.15s, box-shadow 0.15s, border 0.15s;
   cursor: pointer;
 }
 
 .snapshot-card:hover {
-  transform: translateY(-4px) scale(1.03);
+  transform: translateY(-0.25rem) scale(1.03); /* -4px */
   border-color: #ff3c3c;
-  box-shadow: 0 8px 32px 0 #ff3c3c33, 0 1.5px 0 #ff3c3c inset;
+  box-shadow: 0 0.5rem 2rem 0 #ff3c3c33, 0 0.09375rem 0 #ff3c3c inset; /* 8px 32px 1.5px */
 }
 
 .snapshot-img {
   width: 100%;
-  height: 180px;
+  height: 11.25rem; /* 180px */
   object-fit: cover;
-  border-bottom: 1px solid #3b0a0a;
+  border-bottom: 0.0625rem solid #3b0a0a; /* 1px */
   transition: filter 0.2s;
 }
 
@@ -103,13 +103,13 @@ body {
 
 /* Start Game Card Enhancements */
 .start-game-card {
-  background: linear-gradient(135deg, #18181b 60%, #3b0a0a 100%), /* existing dark gradient */
+  background: linear-gradient(135deg, #18181b 60%, #3b0a0a 100%), 
               linear-gradient(120deg, rgba(0,0,0,0.85) 60%, rgba(220,38,38,0.35) 100%);
-  border: 1.5px solid #ff3c3c33;
+  border: 0.09375rem solid #ff3c3c33; /* 1.5px */
   border-radius: 1.5rem;
-  box-shadow: 0 4px 32px 0 #000a, 0 2px 0 #ff3c3c22 inset;
+  box-shadow: 0 0.25rem 2rem 0 #000a, 0 0.125rem 0 #ff3c3c22 inset; /* 4px 32px 2px */
   padding: 2.5rem 2rem;
-  max-width: 420px;
+  max-width: 26.25rem; /* 420px */
   width: 100%;
   margin: auto;
   transition: box-shadow 0.2s, border 0.2s;
@@ -118,7 +118,7 @@ body {
 
 .start-game-card:hover {
   border-color: #ff3c3c;
-  box-shadow: 0 8px 40px 0 #ff3c3c33, 0 2px 0 #ff3c3c44 inset;
+  box-shadow: 0 0.5rem 2.5rem 0 #ff3c3c33, 0 0.125rem 0 #ff3c3c44 inset; /* 8px 40px 2px */
 }
 
 .start-game-title {
@@ -137,7 +137,7 @@ body {
 
 .start-game-input {
   background: #18181b;
-  border: 1.5px solid #3b0a0a;
+  border: 0.09375rem solid #3b0a0a; /* 1.5px */
   color: #fff;
   border-radius: 0.75rem;
   padding: 0.85rem 1.2rem;
@@ -162,13 +162,13 @@ body {
   font-weight: 600;
   width: 100%;
   margin-top: 1rem;
-  box-shadow: 0 2px 8px 0 #ff3c3c33;
+  box-shadow: 0 0.125rem 0.5rem 0 #ff3c3c33; /* 2px 8px */
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .start-game-btn:hover {
   background: linear-gradient(90deg, #b91c1c 60%, #ff3c3c 100%);
-  box-shadow: 0 4px 16px 0 #ff3c3c55;
+  box-shadow: 0 0.25rem 1rem 0 #ff3c3c55; /* 4px 16px */
 }
 
 .start-bg {
@@ -184,16 +184,22 @@ body {
 
 /* Rankings sidebar: make sure it scrolls and fits all players on one screen */
 .rankings-sidebar {
-  max-height: calc(100vh - 3rem); /* 3rem header */
+  max-height: calc(100vh - 3rem);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #ef4444 #222;
-  width: 18%;
+  width: 18vw;
+  min-width: 10rem;
+  font-size: 0.95rem;
+  /* Add for mobile: */
+  word-break: break-word;
 }
 
 @media (min-width: 768px) {
   .rankings-sidebar {
-    width: 12%;
+    width: 12vw;
+    min-width: 8rem;
+    font-size: 1rem;
   }
 }
 
@@ -210,7 +216,23 @@ body {
 /* Responsive: collapse health bars if too many players */
 @media (max-width: 768px) {
   .rankings-sidebar {
-    max-height: calc(100vh - 48px);
-    font-size: 12px;
+    width: 38vw;
+    min-width: 6.5rem;
+    font-size: 0.85rem;
+    padding: 0.5em 0.25em;
+  }
+  .rankings-sidebar .flex.items-center.mb-4.space-x-2 {
+    flex-direction: column;
+    gap: 0.25em;
+    margin-bottom: 0.5em;
+  }
+  .rankings-sidebar .space-y-2 > div {
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+  }
+  .rankings-sidebar span,
+  .rankings-sidebar .truncate {
+    font-size: 0.8rem !important;
+    line-height: 1.1;
   }
 }
