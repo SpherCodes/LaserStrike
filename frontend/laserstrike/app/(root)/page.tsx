@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import HealthBar from '@/components/healthbar';
 import { Player } from '@/lib/Types';
 import { getSocket } from '@/lib/socket';
-import dynamic from 'next/dynamic';
 import CameraViewer from '@/components/CameraViewer';
 
 // const CameraViewer = dynamic(
@@ -18,8 +17,10 @@ export default function HomePage() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [health, setHealth] = useState(10);
-  const [score, setScore] = useState(100);
-  const [strikes, setStrikes] = useState(1);
+  const [score, setScore] = useState(0);
+  const [strikes, setStrikes] = useState(0);
+  const [kills, setKills] = useState(0);
+  const [deaths, setDeaths] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,6 +32,11 @@ export default function HomePage() {
         const parsedPlayer = JSON.parse(storedPlayer);
         console.log('Parsed player object:', parsedPlayer);
         setPlayer(parsedPlayer);
+        
+        // Set initial values for player stats
+        if (parsedPlayer.health) setHealth(parsedPlayer.health);
+        if (parsedPlayer.kills) setKills(parsedPlayer.kills);
+        if (parsedPlayer.deaths) setDeaths(parsedPlayer.deaths);
         
         // Initialize WebSocket connection for the player
         if (parsedPlayer.id) {
@@ -54,6 +60,36 @@ export default function HomePage() {
   const handleExit = () => {
     sessionStorage.removeItem('player');
     router.push('/login');
+  };
+
+  // Handle player updates from CameraViewer
+  const handlePlayerUpdate = (updates: Partial<Player>) => {
+    console.log('Player update received:', updates);
+    
+    // Update health if provided
+    if (updates.health !== undefined) {
+      setHealth(updates.health);
+    }
+    
+    // Update kills if provided
+    if (updates.kills !== undefined) {
+      setKills(updates.kills);
+    }
+    
+    // Update score if provided from backend
+    if (updates.score !== undefined) {
+      setScore(updates.score);
+    }
+    
+    // Increment strikes when player gets a kill
+    if (updates.kills !== undefined && updates.kills > kills) {
+      setStrikes(prev => prev + 1);
+    }
+    
+    // Update deaths if provided
+    if (updates.deaths !== undefined) {
+      setDeaths(updates.deaths);
+    }
   };
 
   if (isLoading) {
@@ -122,6 +158,18 @@ export default function HomePage() {
               <div className="text-sm font-bold text-white">{strikes}</div>
               <div className="text-xs text-gray-400 uppercase">Strikes</div>
             </div>
+            
+            {/* Kills */}
+            <div className="text-center">
+              <div className="text-sm font-bold text-green-400">{kills}</div>
+              <div className="text-xs text-gray-400 uppercase">Kills</div>
+            </div>
+            
+            {/* Deaths */}
+            <div className="text-center">
+              <div className="text-sm font-bold text-red-400">{deaths}</div>
+              <div className="text-xs text-gray-400 uppercase">Deaths</div>
+            </div>
 
             {/* Quit Button */}
             <button
@@ -144,7 +192,10 @@ export default function HomePage() {
       </div>
       {/* Camera View Container - Full remaining space */}
       <div className='flex-1 relative overflow-hidden'>
-        <CameraViewer playerId={player.id} />
+        <CameraViewer 
+          playerId={player.id} 
+          onPlayerUpdate={handlePlayerUpdate}
+        />
       </div>
     </div>
   );

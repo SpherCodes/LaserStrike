@@ -1,8 +1,13 @@
 'use client';
 import { sendDataToServer, getSocket } from '@/lib/socket';
+import useShotEvents from '@/lib/hooks/useShotEvents';
+import { Player } from '@/lib/Types';
 import React, { useEffect, useRef, useState } from 'react';
 
-const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
+const CameraViewer: React.FC<{ 
+  playerId: number,
+  onPlayerUpdate?: (updates: Partial<Player>) => void
+}> = ({ playerId, onPlayerUpdate }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -10,6 +15,11 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
   const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
+  const [showShotNotification, setShowShotNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  
+  // Subscribe to shot events
+  const shotEvent = useShotEvents();
 
   // Helper to stop any existing camera stream
   const stopCamera = () => {
@@ -90,6 +100,47 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
       clearInterval(connectionCheckInterval);
     };
   }, [playerId]); // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Handle shot events
+  useEffect(() => {
+    if (!shotEvent) return;
+    
+    // Check if this player was involved in the shot
+    if (shotEvent.killer.id === playerId) {
+      // This player shot someone
+      if (onPlayerUpdate) {
+        onPlayerUpdate({
+          kills: shotEvent.killer.kills || 0,
+          score: shotEvent.killer.score
+        });
+      }
+      console.log('Player shot someone:', shotEvent.target.name);
+      // setNotificationMessage(`You shot ${shotEvent.target.name}! +100 points`);
+      // setShowShotNotification(true);
+    } else if (shotEvent.target.id === playerId) {
+      // This player was shot
+      if (onPlayerUpdate) {
+        onPlayerUpdate({
+          deaths: shotEvent.target.deaths || 0,
+          health: shotEvent.target.health
+        });
+      }
+      // setNotificationMessage(`You were shot by ${shotEvent.killer.name}!`);
+      // setShowShotNotification(true);
+    }
+  }, [shotEvent, playerId, onPlayerUpdate]);
+
+  // Separate effect to handle notification timer
+  useEffect(() => {
+    if (showShotNotification) {
+      const timer = setTimeout(() => {
+        setShowShotNotification(false);
+      }, 3000);
+      
+      // Clear timeout on cleanup
+      return () => clearTimeout(timer);
+    }
+  }, [showShotNotification]);
 
   // Capture frame and send
   const takePhoto = () => {
@@ -121,23 +172,6 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
           type: 'capture_image',
           image: image.split(',')[1], // Send base64 data without prefix
           player_id: playerId
-        }, (success, message) => {
-          // Handle response when it arrives
-          if (success) {
-            console.log('✅ Image sent successfully:', message);
-            setLastCaptureStatus('success');
-            setCaptureMessage(message || 'Strike captured successfully! 🎯');
-          } else {
-            console.error('❌ Image capture failed:', message);
-            setLastCaptureStatus('error');
-            setCaptureMessage(message || 'Failed to capture strike. Try again!');
-          }
-          
-          // Clear status after 3 seconds
-          setTimeout(() => {
-            setLastCaptureStatus(null);
-            setCaptureMessage('');
-          }, 3000);
         });
       } catch (error) {
         console.error('Error sending image:', error);
@@ -272,6 +306,15 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
             </span>
             <span className="font-medium">{captureMessage}</span>
           </div>
+        </div>
+      )}
+      
+      {/* Shot notification */}
+      {showShotNotification && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-md border-2 border-red-500 transition-all duration-300">
+          <p className="text-white text-center text-lg font-semibold">
+            {notificationMessage}
+          </p>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ export const RegisterPlayer = async (player: {
   tagId: number;
 }): Promise<Player | null> => {
   if (player) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ;
     if (!apiUrl) {
       console.error(
         "API URL is not configured. Please set NEXT_PUBLIC_API_URL in environment variables."
