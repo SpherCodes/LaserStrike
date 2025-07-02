@@ -9,32 +9,23 @@ export default function SpectatorView() {
   const [snapshots, setSnapshots] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  const [scores, setScores] = useState<number[]>([]);
+  //const [scores, setScores] = useState<number[]>([]);
 
   // Function to fetch players and snapshots data
   const fetchPlayersAndSnapshots = useCallback(async () => {
     try {
+      //fetch players and convert to players array
       const playersRes = await fetch(`${apiUrl}/users`);
       const playersJson = await playersRes.json();
       const playersData: Player[] = Object.values(playersJson);
 
+      //fetch snapshots
       const snapshotsRes = await fetch(`${apiUrl}/admin/images`);
       const snapshotsData: string[] = await snapshotsRes.json();
-
       console.log("Fetched players:", playersData);
-      // Calculate scores just like in the test data
-      type PlayerWithScore = { player: Player; score: number };
-      const playersWithScores: PlayerWithScore[] = playersData.map((player: Player) => {
-        const kills = player.kills ?? 0;
-        const deaths = player.deaths ?? 0;
-        const health = player.health ?? 0;
-        const score = Math.round(kills * 100 + deaths * 10 + health * 0);
-        return { player, score };
-      });
-
-      playersWithScores.sort((a: PlayerWithScore, b: PlayerWithScore) => b.score - a.score);
-      setPlayers(playersWithScores.map((p) => p.player));
-      setScores(playersWithScores.map((p) => p.score));
+      //Sort the players by score
+      playersData.sort((a: Player, b: Player) => (b.score ?? 0) - (a.score ?? 0));
+      setPlayers(playersData);
       setSnapshots(snapshotsData);
     } catch (err) {
       console.error("Failed to fetch players or snapshots", err);
@@ -105,20 +96,32 @@ export default function SpectatorView() {
       <div className="flex-1 flex">
         {/* Mobile Toggle */}
         <button
-          className="absolute top-24 left-4 z-50 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-md md:hidden transition"
+          className={`md:hidden transition
+            ${showSidebar 
+              ? "fixed z-50 bg-gray-800 hover:bg-gray-700"
+              : "absolute z-50 bg-gray-800 hover:bg-gray-700"
+            }
+            text-white p-2 rounded-md`}
           onClick={() => setShowSidebar(!showSidebar)}
+          style={
+            showSidebar
+              ? { left: '45%', top: '1.5%', transform: 'translateX(-50%)', boxShadow: "0 2px 8px #0008" }
+              : { left: '1%', top: '4%' }
+          }
         >
           {showSidebar ? "✕" : "☰"}
         </button>
-
         {/* Rankings Sidebar */}
-        
         <div
           className={`bg-gray-900 border-r border-gray-700 p-4 overflow-y-auto transition-transform duration-300 ease-in-out z-40
-          fixed top-0 left-0 min-h-full w-[18%]
+          fixed top-0 left-0 min-h-full
           transform ${showSidebar ? "translate-x-0" : "-translate-x-full"}
           md:static md:translate-x-0 md:w-[12%] md:block rankings-sidebar`}
-          style={{ maxHeight: 'calc(100vh - 3rem)' }} // 3rem for header
+          style={{
+            maxHeight: 'calc(100vh - 3rem)',
+            width: showSidebar && window.innerWidth < 768 ? '50%' : '16%',
+            minWidth: showSidebar && window.innerWidth < 768 ? '8rem' : undefined,
+          }}
         >
           <div className="flex items-center mb-4 space-x-2">
             <span className="inline-flex items-center justify-center w-2rem h-2rem rounded-full bg-gradient-to-br from-yellow-400 via-red-500 to-red-900 shadow-lg">
@@ -129,32 +132,40 @@ export default function SpectatorView() {
             <span className="font-bold text-lg text-white">Rankings</span>
           </div>
           <div className="space-y-2">
-            {players.map((player, index) => (
-              <div
-                key={player.id}
-                className="flex flex-col bg-gray-800 rounded-lg px-[0.5em] py-[0.25em] border border-gray-700 hover:border-gray-600 transition"
-                style={{ minWidth: 0 }}
-              >
-                <div className="flex items-center justify-between min-w-0">
-                  <span className="truncate font-semibold text-white text-xs">{index + 1}. {player.name}</span>
-                  <div className="ml-[0.5em] flex-shrink-0 text-right">
-                    <span className="block text-[0.625rem] text-gray-300 font-bold">Score</span>
-                    <span className="block text-base text-cyan-400 font-extrabold">{scores[index] ?? 0}</span>
-                  </div>
-                </div>
-                <span className="truncate text-[0.6875rem] text-gray-400">
-                  Health: <span className="text-green-400">{player.health}</span> | 
-                  K: <span className="text-cyan-300">{player.kills}</span> | 
-                  D: <span className="text-red-400">{player.deaths}</span>
-                </span>
-                {/* Show health bar only if few players */}
-                {players.length <= 6 && (
-                  <div className="mt-[0.25em] mb-[0.25em]">
-                    <HealthBar current={player.health} max={10} />
-                  </div>
-                )}
+            {players.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center text-gray-400">
+                <span className="text-4xl mb-2 opacity-60">🏆</span>
+                <span className="font-semibold text-base">No players in the rankings yet</span>
+                <span className="text-xs mt-1">Players will appear here as soon as they join the game.</span>
               </div>
-            ))}
+            ) : (
+              players.map((player, index) => (
+                <div
+                  key={player.id}
+                  className="flex flex-col bg-gray-800 rounded-lg px-[0.5em] py-[0.25em] border border-gray-700 hover:border-gray-600 transition"
+                  style={{ minWidth: 0 }}
+                >
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="truncate font-semibold text-white text-xs">{index + 1}. {player.name}</span>
+                    <div className="ml-[0.5em] flex-shrink-0 text-right">
+                      <span className="block text-[0.625rem] text-gray-300 font-bold">Score</span>
+                      <span className="block text-base text-cyan-400 font-extrabold">{player.score ?? 0}</span>
+                    </div>
+                  </div>
+                  <span className="truncate text-[0.6875rem] text-gray-400">
+                    Health: <span className="text-green-400">{player.health}</span> | 
+                    K: <span className="text-cyan-300">{player.kills}</span> | 
+                    D: <span className="text-red-400">{player.deaths}</span>
+                  </span>
+                  {/* Show health bar only if few players */}
+                  {players.length <= 6 && (
+                    <div className="mt-[0.25em] mb-[0.25em]">
+                      <HealthBar current={player.health} max={10} />
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -175,7 +186,7 @@ export default function SpectatorView() {
             <div className="text-sm text-gray-400">{snapshots.length} photos</div>
           </div>
           <div className="snapshots-grid">
-            {snapshots.slice(0, 12).map((src, index) => (
+            {snapshots.slice(0, 8).map((src, index) => (
               <div
                 key={index}
                 className="snapshot-card"
