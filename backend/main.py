@@ -1,6 +1,7 @@
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect,HTTPException,WebSocketException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.websockets import WebSocketState
 from services import *  # Using original services with computer vision
 from models import User
 
@@ -23,8 +24,27 @@ class ConnectionManager:
             print("No active connections")
 
     async def broadcast(self, message: str) -> None:
+        # Create a list to track connections that need to be removed
+        closed_connections = []
+        
         for connection in self.active_connections:
-            await connection.send_text(message)
+            try:
+                # Only send to connections that are still open
+                if connection.client_state == WebSocketState.CONNECTED:
+                    await connection.send_text(message)
+            except RuntimeError as e:
+                # Connection is already closed, mark it for removal
+                print(f"Failed to send message: {e}")
+                closed_connections.append(connection)
+            except Exception as e:
+                # Other errors, also mark for removal
+                print(f"Error broadcasting message: {e}")
+                closed_connections.append(connection)
+        
+        # Remove any closed connections from active_connections
+        for closed in closed_connections:
+            if closed in self.active_connections:
+                self.active_connections.remove(closed)
 
     @staticmethod
     async def send_text(message: str, websocket: WebSocket) -> None:

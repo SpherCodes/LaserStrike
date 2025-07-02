@@ -6,3 +6,5 @@ class User(BaseModel):
     kills: int = 0
     deaths: int = 0
     health: int = 10
+    score: int = 0
+    isLive: bool = True

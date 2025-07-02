@@ -4,6 +4,8 @@ export type Player = {
   kills?: number;
   deaths?: number;
   health: number;
+  score?: number;
+  isAlive?: boolean;
 };
 
 // Shot broadcast event from the server
