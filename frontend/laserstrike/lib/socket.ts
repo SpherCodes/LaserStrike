@@ -79,7 +79,7 @@ export const getSocket = (userId: number) => {
             console.log("Message:", response.message);
           }
         }
-
+        console.log(response)
         if (response.type === "game_reset") {
           console.log("Game has been reset");
 

@@ -105,7 +105,6 @@ async def reset():
     reset_game()
     if len(list_users().keys())==0:
         c_manager.broadcast({"type":"game_reset","message":"Game has been reset by admin"})
-        c_manager.disconnect_everyone()
         return {"status": "ok", "message": "Reset server"}
     return {"status": "Bad Request", "message": "Failed to reset server"}
 
