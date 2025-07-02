@@ -14,7 +14,6 @@ export default function SpectatorView() {
   const router = useRouter();
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
 
     async function fetchPlayersAndSnapshots() {
       try {
@@ -48,7 +47,7 @@ export default function SpectatorView() {
     }
 
     fetchPlayersAndSnapshots();
-    interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
+   const interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
 
     return () => clearInterval(interval);
   }, [apiUrl]);
