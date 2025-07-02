@@ -30,7 +30,7 @@ def process_shot(data: str) -> int | None:
         target_id, distance = processed_data
         if target_id not in users:
             print("Target ID not found")
-            return False
+            return None
         users[data_obj["player_id"]].kills += 1
         users[target_id].deaths +=1
         users[target_id].health -=1
