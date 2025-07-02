@@ -6,6 +6,12 @@ export type Player = {
   health: number;
 };
 
+// Shot broadcast event from the server
+export type ShotEvent = {
+  killer: Player;
+  target: Player;
+};
+
 // Keep these exported for future use
 export interface PlayerRegisterProps {
   name: string;

@@ -87,13 +87,16 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
                 data = await websocket.receive_text()
                 # TODO: broadcast killer:player object,target:player object
                 target_id = process_shot(data)
-                if target_id is int:
-                    shot_obj = {'killer': get_user(user_id), 'target':get_user(target_id)}
+                if isinstance(target_id, int):
+                    killer = find_user(user_id)
+                    target = find_user(target_id)
+                    shot_obj = {'type': 'shot_event', 'killer': killer.__dict__, 'target': target.__dict__}
                     print(shot_obj)
                     await c_manager.broadcast(json.dumps(shot_obj))
+                    await websocket.send_json({"success": True, "message": f"Shot hit player {target_id}"})
                 else:
-                    await websocket.send_json(json.dumps(target_id is int))
-                    print("Shot missed sent json:", json.dumps(target_id is int))
+                    await websocket.send_json({"success": False, "message": "Shot missed"})
+                    print("Shot missed")
         except WebSocketDisconnect:
             c_manager.disconnect(websocket)
     except WebSocketException as e:

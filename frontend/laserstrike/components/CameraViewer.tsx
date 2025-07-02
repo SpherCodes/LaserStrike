@@ -1,5 +1,7 @@
 'use client';
 import { sendDataToServer, getSocket } from '@/lib/socket';
+import useShotEvents from '@/lib/hooks/useShotEvents';
+import { Player } from '@/lib/Types';
 import React, { useEffect, useRef, useState } from 'react';
 
 const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
@@ -10,6 +12,12 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
   const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
+  const [playerInfo, setPlayerInfo] = useState<Player | null>(null);
+  const [showShotNotification, setShowShotNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  
+  // Subscribe to shot events
+  const shotEvent = useShotEvents();
 
   // Helper to stop any existing camera stream
   const stopCamera = () => {
@@ -90,6 +98,57 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
       clearInterval(connectionCheckInterval);
     };
   }, [playerId]); // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Fetch player info
+  useEffect(() => {
+    // In a real implementation, you'd fetch player info from the API
+    // For now, we'll create a mock player
+    setPlayerInfo({
+      id: playerId,
+      name: `Player ${playerId}`,
+      kills: 0,
+      deaths: 0,
+      health: 100
+    });
+  }, [playerId]);
+  
+  // Handle shot events
+  useEffect(() => {
+    if (!shotEvent) return;
+    
+    // Check if this player was involved in the shot
+    if (shotEvent.killer.id === playerId) {
+      // This player shot someone
+      setPlayerInfo(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          kills: (prev.kills || 0) + 1
+        };
+      });
+      setNotificationMessage(`You shot ${shotEvent.target.name}! +100 points`);
+      setShowShotNotification(true);
+    } else if (shotEvent.target.id === playerId) {
+      // This player was shot
+      setPlayerInfo(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          deaths: (prev.deaths || 0) + 1,
+          health: shotEvent.target.health
+        };
+      });
+      setNotificationMessage(`You were shot by ${shotEvent.killer.name}!`);
+      setShowShotNotification(true);
+    }
+    
+    // Hide notification after 3 seconds
+    if (showShotNotification) {
+      setTimeout(() => {
+        setShowShotNotification(false);
+      }, 3000);
+    }
+  }, [shotEvent, playerId, showShotNotification]);
 
   // Capture frame and send
   const takePhoto = () => {
@@ -240,6 +299,48 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
         </div>
       </div>
 
+      {/* Player Info */}
+      <div className="absolute top-4 left-4 z-20">
+        {playerInfo && (
+          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold text-white">
+                {playerInfo.id}
+              </div>
+              <div>
+                <div className="font-bold text-lg text-white">{playerInfo.name}</div>
+                <div className="text-xs text-gray-300">ID: {playerInfo.id}</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-gray-400">Health</span>
+                  <span className="text-white font-bold">{playerInfo.health}%</span>
+                </div>
+                <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${
+                      playerInfo.health > 60 ? 'bg-green-500' : 
+                      playerInfo.health > 30 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`} 
+                    style={{ width: `${Math.max(playerInfo.health, 0)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">
+                  Kills: <span className="text-green-400 font-semibold">{playerInfo.kills || 0}</span>
+                </span>
+                <span className="text-gray-400">
+                  Deaths: <span className="text-red-400 font-semibold">{playerInfo.deaths || 0}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Status indicator */}
       <div className="absolute top-4 right-4 z-20">
         <div className="flex items-center space-x-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-2">
@@ -272,6 +373,25 @@ const CameraViewer: React.FC<{ playerId: number }> = ({ playerId }) => {
             </span>
             <span className="font-medium">{captureMessage}</span>
           </div>
+        </div>
+      )}
+      
+      {/* Shot Event Notification */}
+      {showShotNotification && (
+        <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-30 px-6 py-3 rounded-lg bg-black/80 border-2 border-yellow-500 text-yellow-100 backdrop-blur-sm animate-pulse transition-all duration-300">
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">💥</span>
+            <span className="font-bold">{notificationMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Shot notification */}
+      {showShotNotification && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-md border-2 border-red-500 transition-all duration-300">
+          <p className="text-white text-center text-lg font-semibold">
+            {notificationMessage}
+          </p>
         </div>
       )}
     </div>
