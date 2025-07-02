@@ -16,7 +16,7 @@ const CameraViewer: React.FC<{
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
   const [showShotNotification, setShowShotNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState('');
+  // const [notificationMessage, setNotificationMessage] = useState('');
   
   // Subscribe to shot events
   const shotEvent = useShotEvents();
@@ -313,7 +313,7 @@ const CameraViewer: React.FC<{
       {showShotNotification && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-md border-2 border-red-500 transition-all duration-300">
           <p className="text-white text-center text-lg font-semibold">
-            {notificationMessage}
+            {/* {notificationMessage} */}
           </p>
         </div>
       )}
