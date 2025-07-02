@@ -118,7 +118,8 @@ const CameraViewer: React.FC<{
       console.log('Player shot someone:', shotEvent.target.name);
       // setNotificationMessage(`You shot ${shotEvent.target.name}! +100 points`);
       // setShowShotNotification(true);
-    } else if (shotEvent.target.id === playerId) {
+    } 
+    if (shotEvent.target.id === playerId) {
       // This player was shot
       if (onPlayerUpdate) {
         onPlayerUpdate({
