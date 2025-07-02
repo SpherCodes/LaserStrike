@@ -15,12 +15,11 @@ const CameraViewer: React.FC<{
   const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
-  const soundPaths = Array.from({ length: 20 }, (_, i) => `/sounds/shoot${i}.wav`);
-  const audioCtx = new AudioContext();
-  const soundBuffers: AudioBuffer[] = [];
+  const soundPath =  `/sounds/shoot${playerId}.wav`;
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const bufferRef = useRef<AudioBuffer | null>(null);
   const [showShotNotification, setShowShotNotification] = useState(false);
   // const [notificationMessage, setNotificationMessage] = useState('');
-  preloadSounds()
   // Subscribe to shot events
   const shotEvent = useShotEvents();
 
@@ -133,6 +132,20 @@ const CameraViewer: React.FC<{
     }
   }, [shotEvent, playerId, onPlayerUpdate]);
 
+  useEffect(() => {
+    const loadSound = async () => {
+      const ctx = new AudioContext();
+      audioCtxRef.current = ctx;
+
+      const response = await fetch(`/sounds/shoot${playerId}.wav`);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = await ctx.decodeAudioData(arrayBuffer);
+      bufferRef.current = buffer;
+    };
+
+    loadSound().catch(console.error);
+  }, [playerId]);
+
   // Separate effect to handle notification timer
   useEffect(() => {
     if (showShotNotification) {
@@ -146,22 +159,16 @@ const CameraViewer: React.FC<{
   }, [showShotNotification]);
 
 
-  async function preloadSounds() {
-    for (const path of soundPaths) {
-      const response = await fetch(path);
-      const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      soundBuffers.push(audioBuffer);
-    }
-  }
+  function playSound() {
+    const buffer = bufferRef.current;
+    const ctx = audioCtxRef.current;
 
-  function playSound(pId: number) {
-    const buffer = soundBuffers[pId];
-    const source = audioCtx.createBufferSource();
+    if (!buffer || !ctx) return;
+
+    const source = ctx.createBufferSource();
     source.buffer = buffer;
-    source.connect(audioCtx.destination);
-
-    source.start(0, 0, 0.5);
+    source.connect(ctx.destination);
+    source.start(0, 0, 0.5); // start at 0s, play 0.5s
   }
   // Capture frame and send
   const takePhoto = () => {
@@ -181,7 +188,7 @@ const CameraViewer: React.FC<{
     const ctx = canvas.getContext('2d');
 
     // Play shoot sound
-    playSound(playerId)
+    playSound()
 
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
