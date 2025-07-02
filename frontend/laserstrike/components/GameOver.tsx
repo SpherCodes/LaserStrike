@@ -21,37 +21,41 @@ const GameOver: React.FC<GameOverProps> = ({ player, onExit }) => {
     }
   };
 
+  // Format player name with safe fallback
+
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-4 animate-fade-in">
       <div className="max-w-md w-full bg-gradient-to-b from-gray-900 to-black border border-red-700/30 rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-900 to-red-700 px-6 py-4">
-          <h2 className="text-xl font-bold text-white text-center uppercase tracking-wider">Game Over</h2>
+        <div className="bg-gradient-to-r from-red-900 to-red-700 px-6 py-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
+          <h2 className="text-xl font-bold text-white text-center uppercase tracking-wider animate-pulse">Game Over</h2>
         </div>
 
         {/* Content */}
         <div className="p-6 text-center">
           <div className="mb-6">
+            
             <span className="text-red-500 text-5xl font-bold block mb-2">
               ELIMINATED
             </span>
             <p className="text-gray-400">
-              you&apos;ve been eliminated from the game.
+              You&apos;ve been eliminated from the game.
             </p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 my-6">
-            <div className="bg-gray-800 p-3 rounded-lg">
-              <div className="text-xl font-bold text-green-400">{player.kills}</div>
+            <div className="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+              <div className="text-xl font-bold text-green-400">{player.kills ?? 0}</div>
               <div className="text-xs text-gray-400">KILLS</div>
             </div>
-            <div className="bg-gray-800 p-3 rounded-lg">
-              <div className="text-xl font-bold text-red-400">{player.deaths}</div>
+            <div className="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+              <div className="text-xl font-bold text-red-400">{player.deaths ?? 0}</div>
               <div className="text-xs text-gray-400">DEATHS</div>
             </div>
-            <div className="bg-gray-800 p-3 rounded-lg">
-              <div className="text-xl font-bold text-yellow-400">{player.score}</div>
+            <div className="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+              <div className="text-xl font-bold text-yellow-400">{player.score ?? 0}</div>
               <div className="text-xs text-gray-400">SCORE</div>
             </div>
           </div>
@@ -60,7 +64,7 @@ const GameOver: React.FC<GameOverProps> = ({ player, onExit }) => {
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <button
               onClick={handleExit}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-800 text-white font-bold rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all duration-200 shadow-lg"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-red-700 to-red-600 text-white font-bold rounded-lg hover:from-red-800 hover:to-red-700 transition-all duration-200 shadow-lg"
             >
               Exit to Login
             </button>

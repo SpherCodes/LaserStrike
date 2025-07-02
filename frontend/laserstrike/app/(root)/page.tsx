@@ -76,7 +76,8 @@ export default function HomePage() {
     if (updates.health !== undefined) {
       setHealth(updates.health);
       // Check if player is eliminated
-      if (updates.health <= 0) {
+      if (updates.health <= 0 && !isGameOver) {
+        console.log('Player has been eliminated: health is 0');
         setIsGameOver(true);
       }
     }
@@ -101,14 +102,14 @@ export default function HomePage() {
       setDeaths(updates.deaths);
       
       // If player died, check if they're eliminated
-      if (updates.deaths > deaths && updates.health !== undefined && updates.health <= 0) {
-        console.log('Player has been eliminated');
+      if (updates.deaths > deaths && updates.health !== undefined && updates.health <= 0 && !isGameOver) {
+        console.log('Player has been eliminated: death count increased and health is 0');
         setIsGameOver(true);
       }
     }
     
     // Check if player's alive status has changed
-    if (updates.isAlive === false) {
+    if (updates.isAlive === false && !isGameOver) {
       console.log('Player has been marked as dead');
       setIsGameOver(true);
     }
@@ -214,22 +215,32 @@ export default function HomePage() {
       </div>
       {/* Camera View Container - Full remaining space */}
       {isGameOver && player ? (
-        <GameOver
-          player={{
-            kills: kills,
-            deaths: deaths,
-            score: score,
-          }} 
-          onExit={handleExit}
-        />
-      ) : 
+        <>
+          <GameOver
+            player={{
+              kills: kills,
+              deaths: deaths,
+              score: score,
+              name: player.name
+            }} 
+            onExit={handleExit}
+          />
+          {/* Keep CameraViewer in the background */}
+          <div className='flex-1 relative overflow-hidden opacity-20 pointer-events-none'>
+            <CameraViewer 
+              playerId={player.id || 0} 
+              onPlayerUpdate={handlePlayerUpdate}
+            />
+          </div>
+        </>
+      ) : (
         <div className='flex-1 relative overflow-hidden'>
-        <CameraViewer 
-          playerId={player?.id || 0} 
-          onPlayerUpdate={handlePlayerUpdate}
-        />
-      </div>
-      }
+          <CameraViewer 
+            playerId={player?.id || 0} 
+            onPlayerUpdate={handlePlayerUpdate}
+          />
+        </div>
+      )}
 
     </div>
   );
