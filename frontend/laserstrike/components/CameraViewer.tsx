@@ -11,10 +11,7 @@ const CameraViewer: React.FC<{
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastCaptureStatus, setLastCaptureStatus] = useState<'success' | 'error' | null>(null);
-  const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [captureCount, setCaptureCount] = useState(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
   const [showShotNotification, setShowShotNotification] = useState(false);
@@ -190,8 +187,6 @@ const CameraViewer: React.FC<{
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const image = canvas.toDataURL('image/jpeg', 0.9);
-      
-      setCaptureMessage('');
 
       // Send image via WebSocket with callback-based response handling
       try {
@@ -202,13 +197,7 @@ const CameraViewer: React.FC<{
         });
       } catch (error) {
         console.error('Error sending image:', error);
-        setLastCaptureStatus('error');
-        setCaptureMessage('Connection error. Please try again.');
         
-        setTimeout(() => {
-          setLastCaptureStatus(null);
-          setCaptureMessage('');
-        }, 3000);
       }
     }
   };
