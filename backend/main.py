@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from services import *  # Using original services with computer vision
 from models import User
 
-# TODO: broadcast killer:player object,dead:player object
+
 # TODO: update both players after successful shot, add images of successful shot
 # TODO: spectator view
 # TODO: single git ignore and readme
@@ -85,7 +85,15 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         try:
            while True:
                 data = await websocket.receive_text()
-                await websocket.send_json(json.dumps(str(process_shot(data))))
+                # TODO: broadcast killer:player object,target:player object
+                target = process_shot(data)
+                if target is int:
+                    shot_obj = {'killer': get_user(user_id), 'target':target}
+                    print(shot_obj)
+                    await c_manager.broadcast(json.dumps(shot_obj))
+                else:
+                    await websocket.send_json(json.dumps(target is int))
+                    print("Shot missed sent json:", json.dumps(target is int))
         except WebSocketDisconnect:
             c_manager.disconnect(websocket)
     except WebSocketException as e:

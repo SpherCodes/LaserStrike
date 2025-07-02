@@ -17,12 +17,12 @@ def find_user(user_id: int) -> User:
 def remove_user(user_id: int) -> User:
     return users.pop(user_id)
 
-def process_shot(data: str) -> bool:
+def process_shot(data: str) -> int | None:
     data_obj=json.loads(data)
     processed_data = model.process_image(data_obj["image"])
     if processed_data is None:
         print("Processed data is None")
-        return False
+        return None
     else:
         target_id, distance = processed_data
         if target_id not in users:
@@ -31,6 +31,5 @@ def process_shot(data: str) -> bool:
         users[data_obj["player_id"]].kills += 1
         users[target_id].deaths +=1
         users[target_id].health -=1
-        print(users)
         #TODO: update the display and add the photo of the shot
-        return True
+        return target_id
