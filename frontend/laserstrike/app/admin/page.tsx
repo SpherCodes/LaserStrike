@@ -150,7 +150,7 @@ export default function SpectatorView() {
                 {/* Show health bar only if few players */}
                 {players.length <= 6 && (
                   <div className="mt-[0.25em] mb-[0.25em]">
-                    <HealthBar current={player.health} />
+                    <HealthBar current={player.health} max={10} />
                   </div>
                 )}
               </div>
