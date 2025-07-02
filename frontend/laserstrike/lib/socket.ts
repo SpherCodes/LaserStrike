@@ -86,17 +86,12 @@ export const sendImageToServer = (
       pendingCallbacks.set(requestId, callback);
     }
 
-    console.log(
-      JSON.stringify({
-        image,
-        playerId,
-      })
-    );
     // Send the image data with request ID
     socket.send(
       JSON.stringify({
         image,
         playerId,
+        requestId,
       })
     );
 

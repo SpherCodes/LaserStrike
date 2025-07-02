@@ -71,8 +71,10 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         raise WebSocketException(code=404, reason=f"User with user_id:{user_id} not found")
     await c_manager.connect(websocket)
     try:
-       while True:
+        while True:
             data = await websocket.receive_text()
-            await websocket.send_json(json.dumps(str(process_shot(data))))
+            result = process_shot(data)
+            # Send the result directly as JSON without extra str() and json.dumps()
+            await websocket.send_json(result)
     except WebSocketDisconnect:
         c_manager.disconnect(websocket)
