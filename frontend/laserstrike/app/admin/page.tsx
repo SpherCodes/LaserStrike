@@ -5,6 +5,7 @@ import { Player } from "@/lib/Types";
 import { useRouter } from "next/navigation";
 
 export default function SpectatorView() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const [players, setPlayers] = useState<Player[]>([]);
   const [snapshots, setSnapshots] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -13,56 +14,45 @@ export default function SpectatorView() {
   const router = useRouter();
 
   useEffect(() => {
-    // --- Skeleton for fetching players and snapshots ---
-    // (Uncomment and implement your API calls here)
-    /*
+    let interval: NodeJS.Timeout;
+
     async function fetchPlayersAndSnapshots() {
-      const playersRes = await fetch('/api/players');
-      const playersData = await playersRes.json();
-      setPlayers(playersData);
+      try {
+        const playersRes = await fetch(`${apiUrl}/users`);
+        const playersJson = await playersRes.json();
+        // Convert object to array of Player
+        const playersData: Player[] = Object.values(playersJson);
 
-      const snapshotsRes = await fetch('/api/snapshots');
-      const snapshotsData = await snapshotsRes.json();
-      setSnapshots(snapshotsData);
+        const snapshotsRes = await fetch(`${apiUrl}/admin/images`);
+        const snapshotsData: string[] = await snapshotsRes.json();
+
+        console.log("Fetched players:", playersData);
+        console.log(typeof(playersData));
+        // Calculate scores just like in the test data
+        type PlayerWithScore = { player: Player; score: number };
+        const playersWithScores: PlayerWithScore[] = playersData.map((player: Player) => {
+          const kills = player.kills ?? 0;
+          const deaths = player.deaths ?? 0;
+          const health = player.health ?? 0;
+          const score = Math.round(kills * 100 + deaths * 10 + health * 0);
+          return { player, score };
+        });
+
+        playersWithScores.sort((a: PlayerWithScore, b: PlayerWithScore) => b.score - a.score);
+        setPlayers(playersWithScores.map((p) => p.player));
+        setScores(playersWithScores.map((p) => p.score));
+        setSnapshots(snapshotsData);
+      } catch (err) {
+        console.error("Failed to fetch players or snapshots", err);
+      }
     }
+
     fetchPlayersAndSnapshots();
-    */
+    interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
 
-    // --- Test data (keep for now) ---
-    const newPlayers = [
-      { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: 1 },
-      { name: "Calvin", health: 1, kills: 1, deaths: 1, id: 2 },
-      { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: 3 },
-      { name: "Ethan", health: 3, kills: 8, deaths: 10, id: 4 },
-      { name: "Other", health: 1, kills: 1, deaths: 9, id: 5 },
-      // { name: "Other2", health: 1, kills: 9, deaths: 0, id: "A6" },
-    ];
-    //Calculating scores based on kills, deaths, and health
-    // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.
-    // The score is calculated as follows:
-    // score = (kills * killScore) + (deaths * deathBonus) + (health * healthBonus)
-    const playersWithScores = newPlayers.map((player) => {
-      const kills = player.kills ?? 0;
-      const deaths = player.deaths ?? 0;
-      const health = player.health ?? 0;
-
-      const killScore = 100;
-      const deathBonus = 10;
-      const healthBonus = 0;
-
-      const score = Math.round((kills * killScore) + (deaths * deathBonus) + (health * healthBonus));
-
-      return { player, score };
-    });
-
-    playersWithScores.sort((a, b) => b.score - a.score);
-    const sortedPlayers = playersWithScores.map((p) => p.player);
-    const sortedScores = playersWithScores.map((p) => p.score);
-    setPlayers(sortedPlayers);
-    setScores(sortedScores);
-    setSnapshots(Array.from({ length: 50 }, () => "/images/bg-start2.jpg"));
-  }, []);
-
+    return () => clearInterval(interval);
+  }, [apiUrl]);
+  
   return (
     <div className="min-h-screen bg-gray-950 text-white relative flex flex-col">
       {/* Simple Header */}
@@ -220,7 +210,7 @@ export default function SpectatorView() {
                 onClick={() => setSelectedImage(src)}
               >
                 <img
-                  src={src}
+                  src={`data:image/jpeg;base64,${src}`}
                   alt={`Battle snapshot ${index + 1}`}
                   className="snapshot-img"
                 />
@@ -248,7 +238,7 @@ export default function SpectatorView() {
         >
           <div className="relative">
             <img
-              src={selectedImage}
+              src={`data:image/jpeg;base64,${selectedImage}`}
               alt="Enlarged snapshot"
               className="max-w-full max-h-full rounded-lg"
             />
@@ -264,6 +254,7 @@ export default function SpectatorView() {
           </div>
         </div>
       )}
+      {/* Snapshots in base64 format */}
     </div>
   );
 }
