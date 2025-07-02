@@ -7,6 +7,7 @@ import HealthBar from '@/components/healthbar';
 import { Player } from '@/lib/Types';
 import { getSocket } from '@/lib/socket';
 import CameraViewer from '@/components/CameraViewer';
+import GameOver from '@/components/GameOver';
 
 export default function HomePage() {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -16,6 +17,7 @@ export default function HomePage() {
   const [strikes, setStrikes] = useState(0);
   const [kills, setKills] = useState(0);
   const [deaths, setDeaths] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -61,9 +63,22 @@ export default function HomePage() {
   const handlePlayerUpdate = (updates: Partial<Player>) => {
     console.log('Player update received:', updates);
     
+    // Update the full player object with the new data
+    if (player) {
+      const updatedPlayer = {
+        ...player,
+        ...updates
+      };
+      setPlayer(updatedPlayer);
+    }
+    
     // Update health if provided
     if (updates.health !== undefined) {
       setHealth(updates.health);
+      // Check if player is eliminated
+      if (updates.health <= 0) {
+        setIsGameOver(true);
+      }
     }
     
     // Update kills if provided
@@ -84,6 +99,18 @@ export default function HomePage() {
     // Update deaths if provided
     if (updates.deaths !== undefined) {
       setDeaths(updates.deaths);
+      
+      // If player died, check if they're eliminated
+      if (updates.deaths > deaths && updates.health !== undefined && updates.health <= 0) {
+        console.log('Player has been eliminated');
+        setIsGameOver(true);
+      }
+    }
+    
+    // Check if player's alive status has changed
+    if (updates.isAlive === false) {
+      console.log('Player has been marked as dead');
+      setIsGameOver(true);
     }
   };
 
@@ -186,12 +213,24 @@ export default function HomePage() {
         </div>
       </div>
       {/* Camera View Container - Full remaining space */}
-      <div className='flex-1 relative overflow-hidden'>
+      {isGameOver && player ? (
+        <GameOver
+          player={{
+            kills: kills,
+            deaths: deaths,
+            score: score,
+          }} 
+          onExit={handleExit}
+        />
+      ) : 
+        <div className='flex-1 relative overflow-hidden'>
         <CameraViewer 
-          playerId={player.id} 
+          playerId={player?.id || 0} 
           onPlayerUpdate={handlePlayerUpdate}
         />
       </div>
+      }
+
     </div>
   );
 }
