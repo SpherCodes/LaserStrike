@@ -103,10 +103,10 @@ async def get_images():
 @app.api_route("/admin/reset", methods=["GET", "POST"])
 async def reset():
     reset_game()
-    if len(list_users().keys())==0:
-        c_manager.broadcast({"type":"game_reset","message":"Game has been reset by admin"})
-        return {"status": "ok", "message": "Reset server"}
-    return {"status": "Bad Request", "message": "Failed to reset server"}
+    # Convert the dictionary to a JSON string before broadcasting
+    reset_message = json.dumps({"type":"game_reset","message":"Game has been reset by admin"})
+    await c_manager.broadcast(reset_message)
+    return {"status": "ok", "message": "Reset server"}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
