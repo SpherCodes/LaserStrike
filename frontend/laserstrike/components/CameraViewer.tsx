@@ -15,6 +15,7 @@ const CameraViewer: React.FC<{
   const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
+  const soundPaths = Array.from({ length: 20 }, (_, i) => `/sounds/shoot${i}.wav`);
   const [showShotNotification, setShowShotNotification] = useState(false);
   // const [notificationMessage, setNotificationMessage] = useState('');
   
@@ -142,6 +143,10 @@ const CameraViewer: React.FC<{
     }
   }, [showShotNotification]);
 
+  function playSound(pId: number) {
+    const audio = new Audio(soundPaths[pId]);
+    audio.play().catch((e) => console.error("Failed to play sound:", e));
+  }
   // Capture frame and send
   const takePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -151,12 +156,17 @@ const CameraViewer: React.FC<{
       return;
     }
 
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext('2d');
+
+    // Play shoot sound
+    playSound(playerId)
+
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const image = canvas.toDataURL('image/jpeg', 0.9);
