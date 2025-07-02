@@ -15,7 +15,6 @@ const CameraViewer: React.FC<{
   const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
-  const soundPath =  `/sounds/shoot${playerId}.wav`;
   const audioCtxRef = useRef<AudioContext | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
   const [showShotNotification, setShowShotNotification] = useState(false);
