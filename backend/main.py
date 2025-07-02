@@ -19,6 +19,9 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
         if len(self.active_connections) == 0:
             print("No active connections")
+    
+    def disconnect_everyone(self) -> None:
+        self.active_connections.clear()
 
     async def broadcast(self, message: str) -> None:
         # Create a list to track connections that need to be removed
@@ -101,6 +104,8 @@ async def get_images():
 async def reset():
     reset_game()
     if len(list_users().keys())==0:
+        c_manager.broadcast({"type":"game_reset","message":"Game has been reset by admin"})
+        c_manager.disconnect_everyone()
         return {"status": "ok", "message": "Reset server"}
     return {"status": "Bad Request", "message": "Failed to reset server"}
 
