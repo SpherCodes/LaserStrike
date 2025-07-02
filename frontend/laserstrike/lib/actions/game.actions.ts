@@ -13,6 +13,17 @@ export const RegisterPlayer = async (player: {
       throw new Error("API URL is not configured");
     }
 
+    const playersRes = await fetch(`${apiUrl}/users`);
+    const playersJson = await playersRes.json();
+    const playersData: Player[] = Object.values(playersJson);
+
+    for (const p of playersData) {
+      if (player.tagId == p.id) {
+        console.error("Player with id:",p.id," already exists")
+        return null;
+      }
+    }
+
     const res = await fetch(`${apiUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

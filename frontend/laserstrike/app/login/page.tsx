@@ -14,23 +14,25 @@ interface PlayerRegisterProps {
 export default function LoginPage() {
   const [player, setPlayer] = useState<PlayerRegisterProps>({ name: '', tagId: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); // State for the error popup
   const router = useRouter();
 
-
   const handlePlayerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null); // Clear error when user types
     setPlayer(prev => ({ ...prev, name: e.target.value }));
   };
 
   const handleTagIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null); // Clear error when user types
     setPlayer(prev => ({ ...prev, tagId: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(' handleSubmit fired', player);  
+    setError(null); // Clear previous errors on new submission
 
     if (!player.name || !player.tagId) {
-      console.warn('Both name and tagId are required');
+      setError('Both Strike Name and Tag ID are required.');
       return;
     }
 
@@ -45,17 +47,20 @@ export default function LoginPage() {
       if (registered && registered.id) {
         //Persist to session
         sessionStorage.setItem('player', JSON.stringify(registered));
-
         //Initialize WebSocket with the returned player ID
         getSocket(registered.id);
-
         //navigate into the app
         router.push('/');
       } else {
+        // Handle failed registration (e.g., player ID already exists)
+        setError('Registration failed. This Tag ID might already be in use.');
         console.error('Registration failed:', registered);
       }
     } catch (err) {
+      // This completes the TODO
       console.error('Registration error:', err);
+      // Set a generic but friendly error message
+      setError('Could not connect to the game server. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +99,9 @@ export default function LoginPage() {
             <input
               id="tagId"
               type="text"
+              // Only allow numbers in the input
+              pattern="[0-9]*"
+              inputMode="numeric"
               value={player.tagId}
               onChange={handleTagIdChange}
               placeholder="Enter your tag id..."
@@ -102,27 +110,24 @@ export default function LoginPage() {
               maxLength={20}
             />
           </div>
-          {/* <AvatarSelector /> */}
+
+          {/* --- The Error Popup --- */}
+          {error && (
+            <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center text-sm">
+              <p>{error}</p>
+            </div>
+          )}
+          {/* --- End Error Popup --- */}
+
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center space-x-2 py-3 bg-red-600 text-white rounded-lg text-lg font-semibold hover:bg-red-700 transition"
+            disabled={isLoading || !player.name || !player.tagId}
+            className="w-full flex items-center justify-center space-x-2 py-3 bg-red-600 text-white rounded-lg text-lg font-semibold hover:bg-red-700 transition disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             {isLoading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />}
             <span>{isLoading ? 'Entering Battle...' : 'Enter Battle'}</span>
           </button>
         </form>
-
-        {/* <div className="mt-6">
-          <div className="text-center text-sm text-gray-400 mb-4">or</div>
-          <button
-            onClick={handleCreateNewGame}
-            className="w-full flex items-center justify-center space-x-2 py-3 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition border border-blue-500/20"
-          >
-            <span>👥</span>
-            <span>Start Spectator View</span>
-          </button>
-        </div> */}
 
         <div className="mt-8 text-center text-sm text-gray-400">
           Take precise shots and dominate the leaderboard!
