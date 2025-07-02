@@ -132,32 +132,40 @@ export default function SpectatorView() {
             <span className="font-bold text-lg text-white">Rankings</span>
           </div>
           <div className="space-y-2">
-            {players.map((player, index) => (
-              <div
-                key={player.id}
-                className="flex flex-col bg-gray-800 rounded-lg px-[0.5em] py-[0.25em] border border-gray-700 hover:border-gray-600 transition"
-                style={{ minWidth: 0 }}
-              >
-                <div className="flex items-center justify-between min-w-0">
-                  <span className="truncate font-semibold text-white text-xs">{index + 1}. {player.name}</span>
-                  <div className="ml-[0.5em] flex-shrink-0 text-right">
-                    <span className="block text-[0.625rem] text-gray-300 font-bold">Score</span>
-                    <span className="block text-base text-cyan-400 font-extrabold">{player.score ?? 0}</span>
-                  </div>
-                </div>
-                <span className="truncate text-[0.6875rem] text-gray-400">
-                  Health: <span className="text-green-400">{player.health}</span> | 
-                  K: <span className="text-cyan-300">{player.kills}</span> | 
-                  D: <span className="text-red-400">{player.deaths}</span>
-                </span>
-                {/* Show health bar only if few players */}
-                {players.length <= 6 && (
-                  <div className="mt-[0.25em] mb-[0.25em]">
-                    <HealthBar current={player.health} max={10} />
-                  </div>
-                )}
+            {players.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center text-gray-400">
+                <span className="text-4xl mb-2 opacity-60">🏆</span>
+                <span className="font-semibold text-base">No players in the rankings yet</span>
+                <span className="text-xs mt-1">Players will appear here as soon as they join the game.</span>
               </div>
-            ))}
+            ) : (
+              players.map((player, index) => (
+                <div
+                  key={player.id}
+                  className="flex flex-col bg-gray-800 rounded-lg px-[0.5em] py-[0.25em] border border-gray-700 hover:border-gray-600 transition"
+                  style={{ minWidth: 0 }}
+                >
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="truncate font-semibold text-white text-xs">{index + 1}. {player.name}</span>
+                    <div className="ml-[0.5em] flex-shrink-0 text-right">
+                      <span className="block text-[0.625rem] text-gray-300 font-bold">Score</span>
+                      <span className="block text-base text-cyan-400 font-extrabold">{player.score ?? 0}</span>
+                    </div>
+                  </div>
+                  <span className="truncate text-[0.6875rem] text-gray-400">
+                    Health: <span className="text-green-400">{player.health}</span> | 
+                    K: <span className="text-cyan-300">{player.kills}</span> | 
+                    D: <span className="text-red-400">{player.deaths}</span>
+                  </span>
+                  {/* Show health bar only if few players */}
+                  {players.length <= 6 && (
+                    <div className="mt-[0.25em] mb-[0.25em]">
+                      <HealthBar current={player.health} max={10} />
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
