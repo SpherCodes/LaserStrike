@@ -119,6 +119,29 @@ export default function HomePage() {
     );
   }
 
+  // --- ADD THIS BLOCK ---
+if (health <= 0) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+      <div className="text-center text-white max-w-md w-full">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-red-500 mb-4">
+          Game Over
+        </div>
+        <div className="mb-6 text-base sm:text-lg md:text-xl text-gray-300">
+          You have been eliminated!
+        </div>
+        <button
+          onClick={handleExit}
+          className="w-full sm:w-auto px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+        >
+          Exit to Login
+        </button>
+      </div>
+      </div>
+    );
+  }
+  // --- END BLOCK ---
+
   // Get player name from the stored object
   const playerName = player.name || 'Unknown';
   const playerId = player.id;
