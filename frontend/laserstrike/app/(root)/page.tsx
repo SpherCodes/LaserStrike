@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HealthBar from '@/components/healthbar';
 import { Player } from '@/lib/Types';
@@ -66,7 +66,7 @@ export default function HomePage() {
   };
 
   // Handle player updates from CameraViewer
-  const handlePlayerUpdate = (updates: Partial<Player>) => {
+  const handlePlayerUpdate = useCallback((updates: Partial<Player>) => {
     console.log('Player update received:', updates);
     
     // Update the full player object with the new data
@@ -119,7 +119,7 @@ export default function HomePage() {
       console.log('Player has been marked as dead');
       setIsGameOver(true);
     }
-  };
+  }, [isGameOver, deaths, kills]);
 
   if (isLoading) {
     return (
@@ -221,25 +221,10 @@ export default function HomePage() {
         </div>
       </div>
       {/* Camera View Container - Full remaining space */}
-      {isGameOver && player ? (
-        <>
-          <GameOver
-            player={{
-              kills: kills,
-              deaths: deaths,
-              score: score,
-              name: player.name
-            }} 
-            onExit={handleExit}
-          />
-          {/* Keep CameraViewer in the background */}
-          <div className='flex-1 relative overflow-hidden opacity-20 pointer-events-none'>
-            <CameraViewer 
-              playerId={player.id || 0} 
-              onPlayerUpdate={handlePlayerUpdate}
-            />
-          </div>
-        </>
+      {isGameOver ? (
+        <div className='flex-1 relative overflow-hidden'>
+          <GameOver player={player} onExit={handleExit} />
+        </div>
       ) : (
         <div className='flex-1 relative overflow-hidden'>
           <CameraViewer 
@@ -248,7 +233,6 @@ export default function HomePage() {
           />
         </div>
       )}
-
     </div>
   );
 }

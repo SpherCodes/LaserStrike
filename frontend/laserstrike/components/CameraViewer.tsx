@@ -18,7 +18,7 @@ const CameraViewer: React.FC<{
   const audioCtxRef = useRef<AudioContext | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
   const [showShotNotification, setShowShotNotification] = useState(false);
-  // const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
   // Subscribe to shot events
   const shotEvent = useShotEvents();
 
@@ -81,7 +81,6 @@ const CameraViewer: React.FC<{
     const ensureSocketConnection = () => {
       try {
         const socket = getSocket(playerId);
-        console.log('WebSocket state:', socket?.readyState);
         setIsSocketConnected(socket?.readyState === WebSocket.OPEN);
       } catch (error) {
         console.error('Failed to initialize WebSocket:', error);
@@ -115,9 +114,8 @@ const CameraViewer: React.FC<{
           score: shotEvent.killer.score
         });
       }
-      console.log('Player shot someone:', shotEvent.target.name);
-      // setNotificationMessage(`You shot ${shotEvent.target.name}! +100 points`);
-      // setShowShotNotification(true);
+      setNotificationMessage(`You shot ${shotEvent.target.name}!`);
+      setShowShotNotification(true);
     } 
     if (shotEvent.target.id === playerId) {
       // This player was shot
@@ -127,8 +125,8 @@ const CameraViewer: React.FC<{
           health: shotEvent.target.health
         });
       }
-      // setNotificationMessage(`You were shot by ${shotEvent.killer.name}!`);
-      // setShowShotNotification(true);
+      setNotificationMessage(`You were shot by ${shotEvent.killer.name}!`);
+      setShowShotNotification(true);
     }
   }, [shotEvent, playerId, onPlayerUpdate]);
 
@@ -151,7 +149,7 @@ const CameraViewer: React.FC<{
     if (showShotNotification) {
       const timer = setTimeout(() => {
         setShowShotNotification(false);
-      }, 3000);
+      }, 1000);
       
       // Clear timeout on cleanup
       return () => clearTimeout(timer);
@@ -175,7 +173,6 @@ const CameraViewer: React.FC<{
     if (!videoRef.current || !canvasRef.current) return;
     
     if (!isSocketConnected) {
-      setError('WebSocket not connected');
       return;
     }
 
@@ -194,9 +191,6 @@ const CameraViewer: React.FC<{
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const image = canvas.toDataURL('image/jpeg', 0.9);
       
-      // Increment capture count to show activity
-      setCaptureCount(prev => prev + 1);
-      setLastCaptureStatus(null);
       setCaptureMessage('');
 
       // Send image via WebSocket with callback-based response handling
@@ -318,35 +312,13 @@ const CameraViewer: React.FC<{
           <span className="text-white text-sm font-medium">
             {isSocketConnected ? 'CONNECTED' : 'DISCONNECTED'}
           </span>
-          {captureCount > 0 && (
-            <span className="text-white text-xs bg-red-600 rounded-full px-2 py-1">
-              {captureCount}
-            </span>
-          )}
         </div>
       </div>
-
-      {/* Capture Status Feedback */}
-      {lastCaptureStatus && (
-        <div className={`absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-6 py-3 rounded-lg backdrop-blur-sm border-2 transition-all duration-300 ${
-          lastCaptureStatus === 'success' 
-            ? 'bg-green-900/80 border-green-500 text-green-100' 
-            : 'bg-red-900/80 border-red-500 text-red-100'
-        }`}>
-          <div className="flex items-center space-x-2">
-            <span className="text-xl">
-              {lastCaptureStatus === 'success' ? '✅' : '❌'}
-            </span>
-            <span className="font-medium">{captureMessage}</span>
-          </div>
-        </div>
-      )}
-      
       {/* Shot notification */}
       {showShotNotification && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-md border-2 border-red-500 transition-all duration-300">
           <p className="text-white text-center text-lg font-semibold">
-            {/* {notificationMessage} */}
+            {notificationMessage}
           </p>
         </div>
       )}
