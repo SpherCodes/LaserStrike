@@ -4,9 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from services import *  # Using original services with computer vision
 from models import User
 
+# TODO: broadcast killer:player object,dead:player object
 # TODO: update both players after successful shot, add images of successful shot
 # TODO: spectator view
 # TODO: single git ignore and readme
+
 class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: list[WebSocket] = []
@@ -54,27 +56,37 @@ async def get_users():
     return list_users()
 
 @app.get("/users/{user_id}")
-async def get_user(user_id: str):
-    if user_id not in list_users():
-        raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
-    return find_user(user_id)
+async def get_user(user_id: int):
+    try:
+        if user_id not in list_users():
+            raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
+        return find_user(user_id)
+    except HTTPException as e:
+        print(e)
+        return {"message": f"User with user_id:{user_id} not found"}
+
 
 @app.delete("/users/{user_id}")
-async def delete_user(user_id: str):
-    if user_id not in list_users():
-        raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
-    return remove_user(user_id)
+async def delete_user(user_id: int):
+    try:
+        if user_id not in list_users():
+            raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
+        return remove_user(user_id)
+    except HTTPException as e:
+        print(e)
+        return {"message": f"User with user_id:{user_id} not found"}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
-    if user_id not in list_users():
-        raise WebSocketException(code=404, reason=f"User with user_id:{user_id} not found")
-    await c_manager.connect(websocket)
     try:
-        while True:
-            data = await websocket.receive_text()
-            result = process_shot(data)
-            # Send the result directly as JSON without extra str() and json.dumps()
-            await websocket.send_json(result)
-    except WebSocketDisconnect:
-        c_manager.disconnect(websocket)
+        if user_id not in list_users():
+            raise WebSocketException(code=404, reason=f"User with user_id:{user_id} not found")
+        await c_manager.connect(websocket)
+        try:
+           while True:
+                data = await websocket.receive_text()
+                await websocket.send_json(json.dumps(str(process_shot(data))))
+        except WebSocketDisconnect:
+            c_manager.disconnect(websocket)
+    except WebSocketException as e:
+        print(e)
