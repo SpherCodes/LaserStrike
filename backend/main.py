@@ -95,6 +95,10 @@ async def delete_user(user_id: int):
     except HTTPException as e:
         print(e)
         return {"message": f"User with user_id:{user_id} not found"}
+    
+@app.get("/admin/images")
+async def get_images():
+    return list_recent_images()
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
@@ -105,7 +109,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         try:
            while True:
                 data = await websocket.receive_text()
-                # TODO: broadcast killer:player object,target:player object
                 target_id = process_shot(data)
                 if isinstance(target_id, int):
                     killer = find_user(user_id)
