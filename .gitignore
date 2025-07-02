@@ -38,6 +38,7 @@ backend/pip-delete-this-directory.txt
 backend/.coverage
 backend/.pytest_cache/
 backend/.tox/
+frontend/laserstrike/public/images/avatars/
 
 # Next.js
 frontend/*/.next/

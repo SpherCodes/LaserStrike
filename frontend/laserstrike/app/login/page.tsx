@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RegisterPlayer } from '@/lib/actions/game.actions';
 import { getSocket } from '@/lib/socket';
 import TargetIcon from '@/components/TargetIcon';
+import AvatarSelector from '@/components/AvatarSelector';
 
 interface PlayerRegisterProps {
   name: string;
@@ -105,6 +106,7 @@ export default function LoginPage() {
               maxLength={20}
             />
           </div>
+          <AvatarSelector />
           <button
             type="submit"
             disabled={isLoading}

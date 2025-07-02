@@ -35,7 +35,7 @@ export default function SpectatorView() {
       { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: 3 },
       { name: "Ethan", health: 3, kills: 8, deaths: 10, id: 4 },
       { name: "Other", health: 1, kills: 1, deaths: 9, id: 5 },
-      { name: "Other2", health: 1, kills: 9, deaths: 0, id: 6 },
+      // { name: "Other2", health: 1, kills: 9, deaths: 0, id: "A6" },
     ];
     //Calculating scores based on kills, deaths, and health
     // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.
@@ -48,7 +48,7 @@ export default function SpectatorView() {
 
       const killScore = 100;
       const deathBonus = 10;
-      const healthBonus = 0.001;
+      const healthBonus = 0;
 
       const score = Math.round((kills * killScore) + (deaths * deathBonus) + (health * healthBonus));
 
@@ -60,7 +60,7 @@ export default function SpectatorView() {
     const sortedScores = playersWithScores.map((p) => p.score);
     setPlayers(sortedPlayers);
     setScores(sortedScores);
-    setSnapshots(Array.from({ length: 200 }, () => "/images/bg-start2.jpg"));
+    setSnapshots(Array.from({ length: 50 }, () => "/images/bg-start2.jpg"));
   }, []);
 
   return (
@@ -142,14 +142,19 @@ export default function SpectatorView() {
                       >
                         {index + 1}
                       </div>
+                      {/* Avatar image */}
                       <div
                         className={
                           isTop3
-                            ? "w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl font-bold"
-                            : "w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold"
+                            ? "w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl font-bold overflow-hidden"
+                            : "w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold overflow-hidden"
                         }
                       >
-                        {player.id}
+                        <img
+                          src={`/images/avatars/${(index % 5) + 1}.png`}
+                          alt={`Avatar ${(index % 5) + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div>
                         <div className={isTop3 ? "font-bold text-lg text-white" : "font-medium text-base text-white"}>
