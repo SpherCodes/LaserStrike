@@ -8,7 +8,7 @@ import TargetIcon from '@/components/TargetIcon';
 
 interface PlayerRegisterProps {
   name: string;
-  tagId: number;
+  tagId: string; // Keep as string for form input, convert when needed
 }
 
 export default function LoginPage() {
@@ -16,9 +16,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleCreateNewGame = () => {
-    router.push('/spectator');
-  };
 
   const handlePlayerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPlayer(prev => ({ ...prev, name: e.target.value }));
@@ -40,7 +37,10 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       //  Register via REST API
-      const registered = await RegisterPlayer(player);
+      const registered = await RegisterPlayer({
+        name: player.name,
+        tagId: parseInt(player.tagId) // Convert string to number
+      });
 
       if (registered && registered.id) {
         //Persist to session
@@ -102,6 +102,7 @@ export default function LoginPage() {
               maxLength={20}
             />
           </div>
+          {/* <AvatarSelector /> */}
           <button
             type="submit"
             disabled={isLoading}
@@ -112,7 +113,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="text-center text-sm text-gray-400 mb-4">or</div>
           <button
             onClick={handleCreateNewGame}
@@ -121,7 +122,7 @@ export default function LoginPage() {
             <span>👥</span>
             <span>Start Spectator View</span>
           </button>
-        </div>
+        </div> */}
 
         <div className="mt-8 text-center text-sm text-gray-400">
           Take precise shots and dominate the leaderboard!

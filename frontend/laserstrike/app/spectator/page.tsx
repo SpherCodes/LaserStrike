@@ -30,12 +30,12 @@ export default function SpectatorView() {
 
     // --- Test data (keep for now) ---
     const newPlayers = [
-      { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: "A1" },
-      { name: "Calvin", health: 1, kills: 1, deaths: 1, id: "A2" },
-      { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: "A3" },
-      { name: "Ethan", health: 3, kills: 8, deaths: 10, id: "A4" },
-      { name: "Other", health: 1, kills: 1, deaths: 9, id: "A5" },
-      { name: "Other2", health: 1, kills: 9, deaths: 0, id: "A6" },
+      { name: "Phiwo", health: 2, kills: 6, deaths: 3, id: 1 },
+      { name: "Calvin", health: 1, kills: 1, deaths: 1, id: 2 },
+      { name: "Siphesihle", health: 4, kills: 2, deaths: 9, id: 3 },
+      { name: "Ethan", health: 3, kills: 8, deaths: 10, id: 4 },
+      { name: "Other", health: 1, kills: 1, deaths: 9, id: 5 },
+      { name: "Other2", health: 1, kills: 9, deaths: 0, id: 6 },
     ];
     //Calculating scores based on kills, deaths, and health
     // this system ensures that the score is always increasing or the same, even if a player has no kills or deaths.

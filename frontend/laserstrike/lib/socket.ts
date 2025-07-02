@@ -1,14 +1,29 @@
+import { ShotEvent } from "./Types";
+
 let socket: WebSocket | null = null;
 
 // Callback type for handling responses
 type ResponseCallback = (success: boolean, message?: string) => void;
+type ShotEventCallback = (event: ShotEvent) => void;
 
 // Store pending callbacks with request IDs
 const pendingCallbacks = new Map<string, ResponseCallback>();
 
+// Store event listeners for shot events
+const shotEventListeners = new Set<ShotEventCallback>();
+
 export const getSocket = (userId: number) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    if (typeof window === "undefined") return null; // Server-side guard
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      console.error(
+        "API URL is not configured. Please set NEXT_PUBLIC_API_URL in environment variables."
+      );
+      return null;
+    }
+
     const wsUrl = apiUrl
       .replace("http://", "ws://")
       .replace("https://", "wss://");
@@ -22,6 +37,25 @@ export const getSocket = (userId: number) => {
       try {
         const response = JSON.parse(event.data);
 
+        // Handle shot event broadcasts
+        if (
+          response.type === "shot_event" &&
+          response.killer &&
+          response.target
+        ) {
+          console.log("Shot event received:", response);
+          const shotEvent: ShotEvent = {
+            killer: response.killer,
+            target: response.target,
+          };
+
+          // Notify all listeners
+          shotEventListeners.forEach((listener) => {
+            listener(shotEvent);
+          });
+          return;
+        }
+
         // Handle responses with request IDs
         if (response.requestId && pendingCallbacks.has(response.requestId)) {
           const callback = pendingCallbacks.get(response.requestId);
@@ -30,6 +64,7 @@ export const getSocket = (userId: number) => {
           if (callback) {
             callback(response.success === true, response.message);
           }
+          return;
         }
 
         // Handle general boolean responses
@@ -52,6 +87,8 @@ export const getSocket = (userId: number) => {
       console.log("WebSocket connection closed");
       // Clear pending callbacks
       pendingCallbacks.clear();
+      // Clear shot event listeners
+      shotEventListeners.clear();
     };
   }
   return socket;
@@ -61,6 +98,16 @@ export default getSocket;
 // Generate unique request ID
 const generateRequestId = (): string => {
   return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
+// Register a listener for shot events
+export const onShotEvent = (callback: ShotEventCallback): (() => void) => {
+  shotEventListeners.add(callback);
+
+  // Return a function to remove the listener
+  return () => {
+    shotEventListeners.delete(callback);
+  };
 };
 
 // Send image with callback for response
@@ -77,17 +124,12 @@ export const sendImageToServer = (
       pendingCallbacks.set(requestId, callback);
     }
 
-    console.log(
-      JSON.stringify({
-        image,
-        playerId,
-      })
-    );
     // Send the image data with request ID
     socket.send(
       JSON.stringify({
         image,
-        playerId
+        playerId,
+        requestId,
       })
     );
 

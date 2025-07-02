@@ -182,3 +182,35 @@ body {
   pointer-events: none;
 }
 
+/* Rankings sidebar: make sure it scrolls and fits all players on one screen */
+.rankings-sidebar {
+  max-height: calc(100vh - 3rem); /* 3rem header */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ef4444 #222;
+  width: 18%;
+}
+
+@media (min-width: 768px) {
+  .rankings-sidebar {
+    width: 12%;
+  }
+}
+
+/* Custom scrollbar for sidebar */
+.rankings-sidebar::-webkit-scrollbar {
+  width: 0.4em;
+  background: #222;
+}
+.rankings-sidebar::-webkit-scrollbar-thumb {
+  background: #ef4444;
+  border-radius: 0.4em;
+}
+
+/* Responsive: collapse health bars if too many players */
+@media (max-width: 768px) {
+  .rankings-sidebar {
+    max-height: calc(100vh - 48px);
+    font-size: 12px;
+  }
+}

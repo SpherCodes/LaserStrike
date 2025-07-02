@@ -1,0 +1,42 @@
+/* Shimmer animation for engaging buttons */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.25) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  animation: shimmer 2s infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.btn-move {
+  animation: moveBtn 1.5s infinite alternate cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes moveBtn {
+  0% { transform: scale(1) translateY(0); }
+  60% { transform: scale(1.05) translateY(-2px);}
+  100% { transform: scale(1.08) translateY(-4px);}
+}

@@ -5,7 +5,14 @@ export const RegisterPlayer = async (player: {
   tagId: number;
 }): Promise<Player | null> => {
   if (player) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ;
+    if (!apiUrl) {
+      console.error(
+        "API URL is not configured. Please set NEXT_PUBLIC_API_URL in environment variables."
+      );
+      throw new Error("API URL is not configured");
+    }
+
     const res = await fetch(`${apiUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
