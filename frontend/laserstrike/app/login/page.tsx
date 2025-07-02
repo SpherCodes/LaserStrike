@@ -117,7 +117,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="text-center text-sm text-gray-400 mb-4">or</div>
           <button
             onClick={handleCreateNewGame}
@@ -126,7 +126,7 @@ export default function LoginPage() {
             <span>👥</span>
             <span>Start Spectator View</span>
           </button>
-        </div>
+        </div> */}
 
         <div className="mt-8 text-center text-sm text-gray-400">
           Take precise shots and dominate the leaderboard!

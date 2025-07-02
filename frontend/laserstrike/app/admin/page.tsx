@@ -74,12 +74,22 @@ export default function SpectatorView() {
           </div>
           <div className="flex space-x-3">
             <button
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm"
+              className="btn-shine btn-move px-5 py-2 bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-green-400/30 relative"
               onClick={() => router.push('/start')}
+              style={{ zIndex: 0 }}
             >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
               Start Game
             </button>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm">
+            <button
+              className="btn-shine btn-move px-5 py-2 bg-gradient-to-br from-red-600 via-red-700 to-red-900 text-white rounded-lg shadow-lg hover:from-red-700 hover:to-red-950 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-red-400/30 relative"
+              style={{ zIndex: 0 }}
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
               End Game
             </button>
           </div>
