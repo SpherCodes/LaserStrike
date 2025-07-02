@@ -19,7 +19,6 @@ export default function SpectatorView() {
       try {
         const playersRes = await fetch(`${apiUrl}/users`);
         const playersJson = await playersRes.json();
-        // Convert object to array of Player
         const playersData: Player[] = Object.values(playersJson);
 
         const snapshotsRes = await fetch(`${apiUrl}/admin/images`);
