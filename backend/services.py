@@ -19,12 +19,15 @@ def remove_user(user_id: int) -> User:
 
 def process_shot(data: str) -> bool:
     data_obj=json.loads(data)
-    print(data_obj)
     processed_data = model.process_image(data_obj["image"])
     if processed_data is None:
+        print("Processed data is None")
         return False
     else:
         target_id, distance = processed_data
+        if target_id not in users:
+            print("Target ID not found")
+            return False
         users[data_obj["player_id"]].kills += 1
         users[target_id].deaths +=1
         users[target_id].health -=1
