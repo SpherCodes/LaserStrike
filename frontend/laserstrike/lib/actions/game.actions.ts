@@ -47,3 +47,27 @@ export const RegisterPlayer = async (player: {
   console.error("No player provided");
   return null;
 };
+
+export const ExitGame = async (player: Player): Promise<boolean> => {
+  if (player) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      console.error(
+        "API URL is not configured. Please set NEXT_PUBLIC_API_URL in environment variables."
+      );
+      return false;
+    }
+
+    const res = await fetch(`${apiUrl}/users/${player.id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (!data) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}

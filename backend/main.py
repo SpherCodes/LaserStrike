@@ -90,7 +90,10 @@ async def delete_user(user_id: int):
     try:
         if user_id not in list_users():
             raise HTTPException(status_code=404, detail=f"User with user_id:{user_id} not found")
-        return remove_user(user_id)
+        if(remove_user(user_id)):
+            return True
+        else:
+            return False
     except HTTPException as e:
         print(e)
         return {"message": f"User with user_id:{user_id} not found"}

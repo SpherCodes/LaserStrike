@@ -11,14 +11,11 @@ const CameraViewer: React.FC<{
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastCaptureStatus, setLastCaptureStatus] = useState<'success' | 'error' | null>(null);
-  const [captureMessage, setCaptureMessage] = useState<string>('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [captureCount, setCaptureCount] = useState(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
   const [showShotNotification, setShowShotNotification] = useState(false);
-  // const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
   // Subscribe to shot events
   const shotEvent = useShotEvents();
 
@@ -81,7 +78,6 @@ const CameraViewer: React.FC<{
     const ensureSocketConnection = () => {
       try {
         const socket = getSocket(playerId);
-        console.log('WebSocket state:', socket?.readyState);
         setIsSocketConnected(socket?.readyState === WebSocket.OPEN);
       } catch (error) {
         console.error('Failed to initialize WebSocket:', error);
@@ -115,9 +111,8 @@ const CameraViewer: React.FC<{
           score: shotEvent.killer.score
         });
       }
-      console.log('Player shot someone:', shotEvent.target.name);
-      // setNotificationMessage(`You shot ${shotEvent.target.name}! +100 points`);
-      // setShowShotNotification(true);
+      setNotificationMessage(`You shot ${shotEvent.target.name}!`);
+      setShowShotNotification(true);
     } 
     if (shotEvent.target.id === playerId) {
       // This player was shot
@@ -127,8 +122,8 @@ const CameraViewer: React.FC<{
           health: shotEvent.target.health
         });
       }
-      // setNotificationMessage(`You were shot by ${shotEvent.killer.name}!`);
-      // setShowShotNotification(true);
+      setNotificationMessage(`You were shot by ${shotEvent.killer.name}!`);
+      setShowShotNotification(true);
     }
   }, [shotEvent, playerId, onPlayerUpdate]);
 
@@ -151,7 +146,7 @@ const CameraViewer: React.FC<{
     if (showShotNotification) {
       const timer = setTimeout(() => {
         setShowShotNotification(false);
-      }, 3000);
+      }, 1000);
       
       // Clear timeout on cleanup
       return () => clearTimeout(timer);
@@ -175,7 +170,6 @@ const CameraViewer: React.FC<{
     if (!videoRef.current || !canvasRef.current) return;
     
     if (!isSocketConnected) {
-      setError('WebSocket not connected');
       return;
     }
 
@@ -193,11 +187,6 @@ const CameraViewer: React.FC<{
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const image = canvas.toDataURL('image/jpeg', 0.9);
-      
-      // Increment capture count to show activity
-      setCaptureCount(prev => prev + 1);
-      setLastCaptureStatus(null);
-      setCaptureMessage('');
 
       // Send image via WebSocket with callback-based response handling
       try {
@@ -208,30 +197,28 @@ const CameraViewer: React.FC<{
         });
       } catch (error) {
         console.error('Error sending image:', error);
-        setLastCaptureStatus('error');
-        setCaptureMessage('Connection error. Please try again.');
         
-        setTimeout(() => {
-          setLastCaptureStatus(null);
-          setCaptureMessage('');
-        }, 3000);
       }
     }
   };
 
   return (
     <div className="relative w-full h-screen bg-gradient-to-br from-gray-900 via-black to-red-900 flex items-center justify-center overflow-hidden">
-      {/* Crosshair overlay */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="relative w-16 h-16">
-            {/* Crosshair lines */}
-            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-red-500 opacity-80 shadow-lg"></div>
-            <div className="absolute left-1/2 top-0 w-0.5 h-full bg-red-500 opacity-80 shadow-lg"></div>
-            {/* Center dot */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-500 rounded-full shadow-lg animate-pulse"></div>
-          </div>
-        </div>
+      {/* Redesigned crosshair overlay */}
+      <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+        <svg className="w-24 h-24 text-red-500 opacity-80 drop-shadow-lg animate-pulse" viewBox="0 0 64 64" fill="none">
+          {/* Outer targeting circle */}
+          <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" />
+          {/* Inner precision circle */}
+          <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="1" />
+          {/* Cross lines */}
+          <line x1="32" y1="2" x2="32" y2="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line x1="32" y1="62" x2="32" y2="50" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line x1="2" y1="32" x2="14" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line x1="62" y1="32" x2="50" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          {/* Center precision dot */}
+          <circle cx="32" cy="32" r="4" fill="currentColor" />
+        </svg>
       </div>
 
       {/* Corner frame indicators */}
@@ -282,28 +269,81 @@ const CameraViewer: React.FC<{
       {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Enhanced capture button with pulse animation */}
+      {/* Enhanced tactical shoot button */}
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30">
         <div className="relative">
-          {/* Pulse ring */}
-          <div className= "absolute inset-0 w-40 h-40 rounded-full opacity-20 "></div>
-          {/* Main button */}
+          {/* Outer glow ring - animated when connected */}
+          <div className={`absolute inset-0 w-28 h-28 rounded-full transition-all duration-300 ${
+            isSocketConnected 
+              ? 'animate-ping bg-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.4)]' 
+              : 'bg-gray-500/20'
+          }`}></div>
+          
+          {/* Secondary pulse ring */}
+          <div className={`absolute inset-4 w-24 h-24 rounded-full transition-all duration-500 ${
+            isSocketConnected 
+              ? 'animate-pulse bg-red-600/20 shadow-[0_0_30px_rgba(220,38,38,0.3)]' 
+              : 'bg-gray-400/10'
+          }`}></div>
+          
+          {/* Main tactical button */}
           <button
             onClick={takePhoto}
             disabled={!isSocketConnected}
-            className={`relative w-40 h-40 rounded-full shadow-2xl border-4 text-2xl font-bold flex items-center justify-center transition-all duration-150 ${
-              !isSocketConnected
-                ? 'bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 border-gray-600 text-gray-900 scale-95 cursor-not-allowed opacity-50'
-                : 'bg-gradient-to-br from-white via-gray-100 to-gray-200 text-black border-red-600 hover:scale-105 active:scale-95 hover:shadow-red-500/50'
-            }`}
+            className={`relative w-28 h-28 rounded-full shadow-2xl border-2 text-lg font-bold flex items-center justify-center transition-all duration-200 transform ${
+               !isSocketConnected
+                 ? 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 border-gray-600 text-gray-400 scale-95 cursor-not-allowed opacity-60'
+                 : 'bg-gradient-to-br from-red-900 via-red-800 to-black border-red-500 text-white hover:scale-110 active:scale-95 hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] hover:border-red-400 active:bg-gradient-to-br active:from-red-800 active:via-red-700 active:to-red-900'
+             }`}
           >
-            <div className="flex flex-col items-center">
-                <>
-                  <span className="text-3xl mb-1">🎯</span>
-                  <span className="text-lg font-extrabold">STRIKE</span>
-                </>
+            {/* Inner tactical design */}
+            <div className="relative flex flex-col items-center">
+              {/* Crosshair icon */}
+              <div className="relative">
+                <div className={`w-6 h-6 flex items-center justify-center ${
+                  isSocketConnected ? 'text-red-300' : 'text-gray-500'
+                }`}>
+                  {/* Custom crosshair SVG */}
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="drop-shadow-lg">
+                    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.5" opacity="0.8"/>
+                    <line x1="12" y1="4" x2="12" y2="8" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="12" y1="16" x2="12" y2="20" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="4" y1="12" x2="8" y2="12" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="16" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2"/>
+                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Action text */}
+              <span className={`text-xs font-extrabold tracking-wider mt-1 ${
+                isSocketConnected ? 'text-red-100' : 'text-gray-500'
+              }`}>
+                {isSocketConnected ? 'FIRE' : 'OFFLINE'}
+              </span>
+            </div>
+            
+            {/* Tactical corner elements */}
+            <div className="absolute inset-1 rounded-full border border-red-600/20 pointer-events-none"></div>
+            
+            {/* Status indicator dots */}
+            <div className="absolute -top-1 -right-1">
+              <div className={`w-3 h-3 rounded-full border-2 border-black ${
+                isSocketConnected 
+                  ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)] animate-pulse' 
+                  : 'bg-red-500 animate-bounce'
+              }`}></div>
             </div>
           </button>
+          
+          {/* Tactical grid overlay when active */}
+          {isSocketConnected && (
+            <div className="absolute inset-0 w-20 h-20 rounded-full pointer-events-none opacity-20">
+              <div className="absolute inset-2 border border-red-500/30 rounded-full"></div>
+              <div className="absolute top-1/2 left-2 right-2 h-px bg-red-500/20"></div>
+              <div className="absolute left-1/2 top-2 bottom-2 w-px bg-red-500/20"></div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -318,35 +358,13 @@ const CameraViewer: React.FC<{
           <span className="text-white text-sm font-medium">
             {isSocketConnected ? 'CONNECTED' : 'DISCONNECTED'}
           </span>
-          {captureCount > 0 && (
-            <span className="text-white text-xs bg-red-600 rounded-full px-2 py-1">
-              {captureCount}
-            </span>
-          )}
         </div>
       </div>
-
-      {/* Capture Status Feedback */}
-      {lastCaptureStatus && (
-        <div className={`absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-6 py-3 rounded-lg backdrop-blur-sm border-2 transition-all duration-300 ${
-          lastCaptureStatus === 'success' 
-            ? 'bg-green-900/80 border-green-500 text-green-100' 
-            : 'bg-red-900/80 border-red-500 text-red-100'
-        }`}>
-          <div className="flex items-center space-x-2">
-            <span className="text-xl">
-              {lastCaptureStatus === 'success' ? '✅' : '❌'}
-            </span>
-            <span className="font-medium">{captureMessage}</span>
-          </div>
-        </div>
-      )}
-      
       {/* Shot notification */}
       {showShotNotification && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-lg bg-black/80 backdrop-blur-md border-2 border-red-500 transition-all duration-300">
           <p className="text-white text-center text-lg font-semibold">
-            {/* {notificationMessage} */}
+            {notificationMessage}
           </p>
         </div>
       )}

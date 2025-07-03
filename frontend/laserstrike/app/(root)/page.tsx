@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HealthBar from '@/components/healthbar';
 import { Player } from '@/lib/Types';
 import { getSocket } from '@/lib/socket';
 import CameraViewer from '@/components/CameraViewer';
 import GameOver from '@/components/GameOver';
+import { ExitGame } from '@/lib/actions/game.actions';
 
 export default function HomePage() {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -56,11 +57,16 @@ export default function HomePage() {
 
   const handleExit = () => {
     sessionStorage.removeItem('player');
-    router.push('/login');
+    ExitGame(player as Player).then(success => {
+      if (success) {
+        router.push('/login');
+      }
+      return;
+    })
   };
 
   // Handle player updates from CameraViewer
-  const handlePlayerUpdate = (updates: Partial<Player>) => {
+  const handlePlayerUpdate = useCallback((updates: Partial<Player>) => {
     console.log('Player update received:', updates);
     
     // Update the full player object with the new data
@@ -113,7 +119,7 @@ export default function HomePage() {
       console.log('Player has been marked as dead');
       setIsGameOver(true);
     }
-  };
+  }, [isGameOver, deaths, kills]);
 
   if (isLoading) {
     return (
@@ -191,7 +197,8 @@ export default function HomePage() {
             {/* Deaths */}
             <div className="text-center">
               <div className="text-sm font-bold text-red-400">{deaths}</div>
-              <div className="text-xs text-gray-400 uppercase">Deaths</div>
+              {/* renamed deaths to hits taken */}
+              <div className="text-xs text-gray-400 uppercase">hits takes</div>
             </div>
 
             {/* Quit Button */}
@@ -214,25 +221,10 @@ export default function HomePage() {
         </div>
       </div>
       {/* Camera View Container - Full remaining space */}
-      {isGameOver && player ? (
-        <>
-          <GameOver
-            player={{
-              kills: kills,
-              deaths: deaths,
-              score: score,
-              name: player.name
-            }} 
-            onExit={handleExit}
-          />
-          {/* Keep CameraViewer in the background */}
-          <div className='flex-1 relative overflow-hidden opacity-20 pointer-events-none'>
-            <CameraViewer 
-              playerId={player.id || 0} 
-              onPlayerUpdate={handlePlayerUpdate}
-            />
-          </div>
-        </>
+      {isGameOver ? (
+        <div className='flex-1 relative overflow-hidden'>
+          <GameOver player={player} onExit={handleExit} />
+        </div>
       ) : (
         <div className='flex-1 relative overflow-hidden'>
           <CameraViewer 
@@ -241,7 +233,6 @@ export default function HomePage() {
           />
         </div>
       )}
-
     </div>
   );
 }
