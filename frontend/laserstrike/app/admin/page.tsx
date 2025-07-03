@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import HealthBar from "@/components/healthbar";
 import { Player } from "@/lib/Types";
 
@@ -9,7 +10,62 @@ export default function SpectatorView() {
   const [snapshots, setSnapshots] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  //const [scores, setScores] = useState<number[]>([]);
+  // Add state for authentication
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  
+  // Hardcoded password - in a real app, this would be handled by a proper backend authentication system
+  // The password is "laser123"
+  // Note: This is just for demonstration purposes. In production, never hardcode passwords like this.
+  const ADMIN_PASSWORD = "laser123";
+
+  // State for UI animations
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAccessGranted, setIsAccessGranted] = useState(false);
+  
+  // Function to handle password submission
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    if (password === ADMIN_PASSWORD) {
+      setIsAccessGranted(true);
+      setPasswordError("");
+      
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Store authentication in session storage to persist during the session
+      sessionStorage.setItem('laser_admin_auth', 'true');
+      setIsAuthenticated(true);
+    } else {
+      setPasswordError("Access denied. Invalid credentials.");
+      setIsSubmitting(false);
+      
+      const formElement = document.getElementById('admin-login-form');
+      if (formElement) {
+        formElement.classList.add('animate-shake');
+        
+        setTimeout(() => {
+          formElement.classList.remove('animate-shake');
+        }, 500);
+      }
+      
+      // Clear the error after a delay
+      setTimeout(() => setPasswordError(""), 3000);
+    }
+  };
+
+  // Check for existing authentication on component mount
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('laser_admin_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // Function to fetch players and snapshots data
   const fetchPlayersAndSnapshots = useCallback(async () => {
@@ -33,11 +89,13 @@ export default function SpectatorView() {
   }, [apiUrl]);
 
   useEffect(() => {
-    fetchPlayersAndSnapshots();
-    const interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
-
-    return () => clearInterval(interval);
-  }, [apiUrl, fetchPlayersAndSnapshots]);
+    // Only fetch data if authenticated
+    if (isAuthenticated) {
+      fetchPlayersAndSnapshots();
+      const interval = setInterval(fetchPlayersAndSnapshots, 1000); // Fetch every second
+      return () => clearInterval(interval);
+    }
+  }, [apiUrl, fetchPlayersAndSnapshots, isAuthenticated]);
   
   // Function to reset the game
   const resetGame = async () => {
@@ -68,6 +126,103 @@ export default function SpectatorView() {
     }
   };
 
+  // Function to handle logout
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('laser_admin_auth');
+  };
+
+  // Display login screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center overflow-hidden">
+        {/* Decorative grid background */}
+        <div className="absolute inset-0 bg-grid-pattern bg-[length:50px_50px] opacity-10"></div>
+        
+        {/* Scanner effect */}
+        <div className="absolute h-[2px] w-full bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan"></div>
+        
+        <div id="admin-login-form" className={`relative bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700 w-full max-w-md z-10 ${isAccessGranted ? 'animate-access-granted' : ''}`}>
+          <div className="text-center mb-6">
+            {/* Laser icon */}
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-900 mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-1">LaserStrike</h1>
+            <p className="text-gray-400">Admin Authentication Required</p>
+          </div>
+          
+          <form onSubmit={handlePasswordSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Security Credentials
+                </div>
+              </label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isSubmitting || isAccessGranted}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono tracking-wider"
+                placeholder="••••••"
+                autoFocus
+              />
+              {passwordError && (
+                <div className="text-red-500 text-sm mt-2 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{passwordError}</span>
+                </div>
+              )}
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={isSubmitting || isAccessGranted || !password.length}
+              className={`w-full px-5 py-3 rounded-lg shadow-lg transition-all duration-300 font-bold flex items-center justify-center space-x-2 ${
+                isAccessGranted 
+                  ? "bg-green-600 border-2 border-green-500/30 text-white" 
+                  : "bg-gradient-to-br from-red-500 via-red-600 to-red-700 border-2 border-red-400/30 text-white hover:from-red-600 hover:to-red-800 hover:scale-[1.02] active:scale-95"
+              }`}
+            >
+              {isSubmitting && !isAccessGranted ? (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : isAccessGranted ? (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Access Granted</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>Authenticate</span>
+                </>
+              )}
+            </button>
+          </form>
+          
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-500">Return to <Link href="/" className="text-cyan-400 hover:text-cyan-300 underline">game</Link></p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 text-white relative flex flex-col">
       {/* Simple Header */}
@@ -79,7 +234,7 @@ export default function SpectatorView() {
           </div>
           <div className="flex space-x-3">
             <button
-              className="btn-shine btn-move px-5 py-2 bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 text-white rounded-lg shadow-lg hover:from-yellow-600 hover:to-yellow-800 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-yellow-400/30 relative"
+              className="btn-shine px-5 py-2 bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 text-white rounded-lg shadow-lg hover:from-yellow-600 hover:to-yellow-800 hover:scale-105 active:scale-95 transition-all duration-150 font-bold flex items-center gap-2 border-2 border-yellow-400/30 relative"
               onClick={resetGame}
               style={{ zIndex: 0 }}
             >
@@ -87,6 +242,15 @@ export default function SpectatorView() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               Reset Game
+            </button>
+            <button
+              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-150 flex items-center gap-1"
+              onClick={handleLogout}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
             </button>
           </div>
         </div>
