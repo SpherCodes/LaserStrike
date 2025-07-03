@@ -204,8 +204,8 @@ const CameraViewer: React.FC<{
 
   return (
     <div className="relative w-full h-screen bg-gradient-to-br from-gray-900 via-black to-red-900 flex items-center justify-center overflow-hidden">
-      {/* Redesigned crosshair overlay */}
-      <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+      {/* Redesigned crosshair overlay - moved up */}
+      <div className="absolute inset-0 z-10 pointer-events-none flex items-start justify-center pt-32">
         <svg className="w-24 h-24 text-red-500 opacity-80 drop-shadow-lg animate-pulse" viewBox="0 0 64 64" fill="none">
           {/* Outer targeting circle */}
           <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" />
@@ -325,15 +325,6 @@ const CameraViewer: React.FC<{
             
             {/* Tactical corner elements */}
             <div className="absolute inset-1 rounded-full border border-red-600/20 pointer-events-none"></div>
-            
-            {/* Status indicator dots */}
-            <div className="absolute -top-1 -right-1">
-              <div className={`w-3 h-3 rounded-full border-2 border-black ${
-                isSocketConnected 
-                  ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)] animate-pulse' 
-                  : 'bg-red-500 animate-bounce'
-              }`}></div>
-            </div>
           </button>
           
           {/* Tactical grid overlay when active */}

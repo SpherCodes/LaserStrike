@@ -207,6 +207,103 @@ body {
   border-radius: 0.4em;
 }
 
+/* Admin page styles */
+.rankings-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.5) rgba(31, 41, 55, 0.2);
+}
+
+.rankings-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rankings-sidebar::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.2);
+  border-radius: 4px;
+}
+
+.rankings-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.5);
+  border-radius: 4px;
+}
+
+/* Snapshots grid */
+.snapshots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.snapshot-card {
+  position: relative;
+  background-color: #1f2937;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.snapshot-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.snapshot-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  transition: filter 0.2s ease;
+}
+
+.snapshot-card:hover .snapshot-img {
+  filter: brightness(1.1);
+}
+
+.snapshot-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  background-color: rgba(17, 24, 39, 0.7);
+}
+
+/* Admin authentication animation */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -50%;
+    top: -50%;
+  }
+  100% {
+    left: 150%;
+    top: 150%;
+  }
+}
+
 /* Responsive: collapse health bars if too many players */
 @media (max-width: 768px) {
   .rankings-sidebar {
