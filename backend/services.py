@@ -31,6 +31,9 @@ def process_shot(data: str) -> int | None:
         if target_id not in users:
             print("Target ID not found")
             return None
+        if users[target_id].isLive == False or users[target_id].health <= 0:
+            print("Target is not live or already dead")
+            return None
         users[data_obj["player_id"]].kills += 1
         users[target_id].deaths +=1
         users[target_id].health -=1
